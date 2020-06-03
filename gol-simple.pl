@@ -3,8 +3,6 @@
 use strict;
 use warnings;
 use Time::HiRes qw(sleep);
-use Storable 'dclone';
-use Data::Dumper;
 
 $| = 1;
 package Game{
