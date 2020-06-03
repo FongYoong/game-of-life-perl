@@ -115,7 +115,6 @@ package main{
             my @nextGrid = NewGrid();
             foreach my $row (0 .. $Game::maxLength - 1){
                 foreach my $col (0 .. $Game::maxLength - 1){
-                    
                     my $currentState = GetCurrentState($row, $col);
                     my $nextState = GetNextState($currentState, $row, $col);
                     UpdateGrid($nextState, $row, $col, @nextGrid)
