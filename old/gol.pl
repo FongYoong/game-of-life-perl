@@ -3,15 +3,7 @@
 use strict;
 use warnings;
 use Time::HiRes qw(sleep);
-#use Module::Load;
-eval "use Tk;";
-if ($@) {
-    print "You need Tk to run this program";
-    exit;
-}
-else{
-    use Tk;
-}
+use Tk;
 $| = 1;
 
 package Game{
@@ -37,7 +29,7 @@ package main{
         @grid;
     }
     sub VerifyNeighbour{
-        my($row,$col) = @_;
+        my($row, $col) = @_;
         $row = 0 if $row == $Game::maxLength;
         $col = 0 if $col == $Game::maxLength;
         ($row, $col);
@@ -206,18 +198,18 @@ package main{
             $Game::mouseClicked = 0;
         });
         $Game::canvas->CanvasBind('<KeyPress-x>' => sub {
-            $pressedEvent->(0, @_);
             $Game::keyXDown = 1;
+            $pressedEvent->(0, @_);
         });
         $Game::canvas->CanvasBind('<KeyRelease-x>' => sub {
-            $Game::mouseClicked = 0;
+            $Game::keyXDown = 0;
         });
         $Game::canvas->CanvasBind('<Motion>' => sub {
             if($Game::mouseClicked){
-                $pressedEvent->(1, @_) if $Game::mouseClicked;
+                $pressedEvent->(1, @_);
             }
             elsif($Game::keyXDown){
-                $pressedEvent->(0, @_) if $Game::mouseClicked;
+                $pressedEvent->(0, @_);
             }
         });
         PrintCanvasGrid;
