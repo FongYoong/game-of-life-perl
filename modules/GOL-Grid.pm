@@ -15,6 +15,7 @@ sub new {
    };
    bless $self, $class;
    $self->ResetCurrentGrid;
+   $self->{_previousGrid} = $self->{_currentGrid};
    return $self;
 }
 sub MakeNewGrid{
@@ -82,6 +83,11 @@ sub UpdateGrid{
       }
    }
    $nextGrid;
+}
+sub UpdateCurrentGrid{
+   my ($self) = @_;
+   $self->{_previousGrid} = $self->{_currentGrid};
+   $self->{_currentGrid} = $self->UpdateGrid($self->{_currentGrid});
 }
 
 #Auxillary

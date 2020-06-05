@@ -36,13 +36,14 @@ sub PrintCanvasGrid{
          if($currentState){
             my @positionStart= ($col * $grid->{_boxSize}, $row * $grid->{_boxSize});
             my @positionEnd= (($col + 1) * $grid->{_boxSize}, ($row + 1) * $grid->{_boxSize});
-            $canvas->createOval(@positionStart, @positionEnd, -fill=> 'blue', -tags => "points");
+            my $color = $currentState == $grid->GetCurrentState($row, $col, $grid->{_previousGrid}) ?'blue':'green';
+            $canvas->createOval(@positionStart, @positionEnd, -fill=> $color, -tags => "points");
          }
       }
    }
 }
 sub UpdateGame{
-    $grid->{_currentGrid} = $grid->UpdateGrid($grid->{_currentGrid}) if $isPlaying;
+    $grid->UpdateCurrentGrid if $isPlaying;
     $canvas->delete('points');
     PrintCanvasGrid;
     PrintTerminalGrid;
