@@ -10,7 +10,8 @@ sub new {
       _maxLength => $args{'maxLength'},
       _boxSize => $args{'boxSize'},
       _vicinity => $args{'vicinity'},
-      _currentGrid => undef
+      _currentGrid => undef,
+      _previousGrid => undef
    };
    bless $self, $class;
    $self->ResetCurrentGrid;
@@ -39,7 +40,7 @@ sub GetNeighbours{
    my($self, $row, $col) = @_;
    my @neighbours = ();
    foreach my $nRow ($row - $self->{_vicinity} .. $row + $self->{_vicinity}){
-      foreach my $nCol ($col - 1 .. $col + 1){
+      foreach my $nCol ($col - $self->{_vicinity} .. $col + $self->{_vicinity}){
          if($nRow != $row || $nCol != $col){
             my @verified = $self->VerifyNeighbour($nRow, $nCol);
             push @neighbours, [@verified];
@@ -49,43 +50,38 @@ sub GetNeighbours{
    @neighbours;
 }
 sub GetCurrentState{
-   my ($self, $row, $col) = @_;
-   $self->{_currentGrid}->[$row]->[$col];
+   my ($self, $row, $col, $grid) = @_;
+   $grid->[$row]->[$col];
 }
 sub GetNextState{
-   my ($self, $currentState, @position) = @_;
-   my @neighbours = $self->GetNeighbours(@position);
+   my ($self, $currentState, $row, $col, $grid) = @_;
+   my @neighbours = $self->GetNeighbours($row, $col);
    my $liveNeighbours = 0;
    foreach my $n(@neighbours){
-      $liveNeighbours += $self->GetCurrentState($n->[0], $n->[1]);
+      $liveNeighbours += $self->GetCurrentState($n->[0], $n->[1], $grid);
    }
    if($currentState){
-      if($liveNeighbours != 3 && $liveNeighbours != 2){
-            0;
-      }
-      else{
-            1;
-      }
+      !($liveNeighbours != 2 && $liveNeighbours != 3);
    }
    else{
       $liveNeighbours == 3;
    }
 }
 sub UpdateGridPoint{
-   my ($self, $nextState, $row, $col, $nextGrid) = @_;
-   $nextGrid->[$row]->[$col] = $nextState;
+   my ($self, $nextState, $row, $col, $grid) = @_;
+   $grid->[$row]->[$col] = $nextState;
 }
 sub UpdateGrid{
-   my ($self) = @_;
+   my ($self, $grid) = @_;
    my $nextGrid = $self->MakeNewGrid();
    foreach my $row (0 .. $self->{_maxLength} - 1){
       foreach my $col (0 .. $self->{_maxLength} - 1){
-            my $currentState = $self->GetCurrentState($row, $col);
-            my $nextState = $self->GetNextState($currentState, $row, $col);
+            my $currentState = $self->GetCurrentState($row, $col, $grid);
+            my $nextState = $self->GetNextState($currentState, $row, $col, $grid);
             $self->UpdateGridPoint($nextState, $row, $col, $nextGrid);
       }
    }
-   $self->{_currentGrid} = $nextGrid;
+   $nextGrid;
 }
 
 #Auxillary

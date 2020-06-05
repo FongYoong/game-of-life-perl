@@ -19,19 +19,20 @@ my $keyXDown = 0;
 my $playID;
 
 sub PrintTerminalGrid{
-   print "\n";
-   foreach my $row (0 .. $grid->{_maxLength} - 1){
-      foreach my $col (0 .. $grid->{_maxLength} - 1){
-         my $currentState = $grid->GetCurrentState($row, $col);
-         $currentState? print "*" : print" ";
-      }
-      print "\n";
-   }
+    system("clear");
+    print "\n";
+    foreach my $row (0 .. $grid->{_maxLength} - 1){
+        foreach my $col (0 .. $grid->{_maxLength} - 1){
+            my $currentState = $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
+            $currentState? print "*" : print".";
+        }
+        print "\n";
+    }
 }
 sub PrintCanvasGrid{
    foreach my $row (0 .. $grid->{_maxLength} - 1){
       foreach my $col (0 .. $grid->{_maxLength} - 1){
-         my $currentState = $grid->GetCurrentState($row, $col);
+         my $currentState = $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
          if($currentState){
             my @positionStart= ($col * $grid->{_boxSize}, $row * $grid->{_boxSize});
             my @positionEnd= (($col + 1) * $grid->{_boxSize}, ($row + 1) * $grid->{_boxSize});
@@ -41,9 +42,10 @@ sub PrintCanvasGrid{
    }
 }
 sub UpdateGame{
-    $grid->UpdateGrid if $isPlaying;
+    $grid->{_currentGrid} = $grid->UpdateGrid($grid->{_currentGrid}) if $isPlaying;
     $canvas->delete('points');
     PrintCanvasGrid;
+    PrintTerminalGrid;
 }
 sub RunGame{
    if($isPlaying){
@@ -62,6 +64,7 @@ sub ClearGame{
 sub StartGame{
     system("clear");
     $grid->ResetCurrentGrid();
+    $grid->CreateLine(10, 10, 3);
     $grid->CreateFlower(3, 20);
     $grid->CreateGlider(2,5);
     $grid->CreateGlider(10,5);
