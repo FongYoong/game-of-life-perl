@@ -10,6 +10,7 @@ sub new {
       _maxLength => $args{'maxLength'},
       _boxSize => $args{'boxSize'},
       _vicinity => $args{'vicinity'},
+      _destroyAtBorder => $args{'destroyAtBorder'},
       _currentGrid => undef,
       _previousGrid => undef
    };
@@ -43,6 +44,9 @@ sub GetNeighbours{
       foreach my $nCol ($col - $self->{_vicinity} .. $col + $self->{_vicinity}){
          if($nRow != $row || $nCol != $col){
             my @verified = $self->VerifyPoint($nRow, $nCol);
+            if ($self->{_destroyAtBorder} && ($nCol >= $self->{_maxLength} || $nCol < 0 || $nRow >= $self->{_maxLength} || $nRow < 0)){
+               $verified[2] = 1;
+            }
             push @neighbours, [@verified];
          }
       }
@@ -58,7 +62,7 @@ sub GetNextState{
    my @neighbours = $self->GetNeighbours($row, $col);
    my $liveNeighbours = 0;
    foreach my $n(@neighbours){
-      $liveNeighbours += $self->GetCurrentState($n->[0], $n->[1], $grid);
+      $liveNeighbours += $self->GetCurrentState($n->[0], $n->[1], $grid) if !defined $n->[2];
    }
    if($currentState){
       !($liveNeighbours != 2 && $liveNeighbours != 3);

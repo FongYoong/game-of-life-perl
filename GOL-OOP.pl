@@ -10,10 +10,11 @@ use GOLGrid;
 $| = 1;
 
 my $windowTitle = "Game of Life - Intel Edition";
-my $boxSize = 10;
+my $boxSize = 15;
 my $maxLength = 50;
 my $vicinity = 1;
-my $grid = new GOLGrid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity);
+my $destroyAtBorder = 0;
+my $grid = new GOLGrid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
 my $window;
 my $canvas;
 my $delay = 0.1 * 1000; #0.1 second is the minimum for 50 maxLength
@@ -55,7 +56,7 @@ sub UpdateGame{
     $grid->UpdateCurrentGrid if $isPlaying;
     $canvas->delete('points');
     PrintCanvasGrid;
-    PrintTerminalGrid;
+    #PrintTerminalGrid;
 }
 sub RunGame{
    if($isPlaying){
@@ -129,7 +130,7 @@ sub StartGame{
             open(FH, '<', $filePath) or ErrorDialog('Error!', 'Failed to load file');
             my @data = split(//, <FH>);
             $maxLength = sqrt scalar @data;
-            $grid = new GOLGrid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity);
+            $grid = new GOLGrid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
             foreach my $row(0..$maxLength - 1){
                 foreach my $col(0..$maxLength - 1){
                     $grid->UpdateGridPoint($data[$row * $maxLength + $col], $row, $col, $grid->{_currentGrid});
