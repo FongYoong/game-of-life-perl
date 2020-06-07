@@ -9,10 +9,14 @@ use GOLGrid;
 
 $| = 1;
 
-my $grid = new GOLGrid('maxLength'=>50, 'boxSize'=>20, 'vicinity'=>1);
+my $windowTitle = "Game of Life - Intel Edition";
+my $boxSize = 10;
+my $maxLength = 50;
+my $vicinity = 1;
+my $grid = new GOLGrid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity);
 my $window;
 my $canvas;
-my $delay = 0.1 * 1000; #0.05 second is the minimum
+my $delay = 0.1 * 1000; #0.1 second is the minimum for 50 maxLength
 my $isPlaying = 0;
 my $mouseClicked = 0;
 my $keyXDown = 0;
@@ -43,6 +47,10 @@ sub PrintCanvasGrid{
       }
    }
 }
+sub ErrorDialog{
+    my ($title, $message) = @_;
+    $window->messageBox(-title => $title, -message => $message, -type => 'Ok', -icon => 'error');
+}
 sub UpdateGame{
     $grid->UpdateCurrentGrid if $isPlaying;
     $canvas->delete('points');
@@ -64,18 +72,16 @@ sub ClearGame{
    UpdateGame;
 }
 sub StartGame{
-    system("clear");
     $grid->ResetCurrentGrid();
     $grid->CreateLine(10, 10, 3);
     $grid->CreateFlower(3, 20);
     $grid->CreateGlider(2,5);
     $grid->CreateGlider(10,5);
-    $window = MainWindow->new(-title => "Game of Life - Intel Edition");
+    $window = MainWindow->new(-title => $windowTitle);
     my $code_font = $window->fontCreate('code', -family => 'courier', -size => 20);
     my $mainFrame = $window->Frame()->pack(-side => 'top', -fill => 'x');
     #my $topFrame = $mainFrame->Frame(-background => "red")->pack(-side => 'top', -fill => 'x');
     #my $topLabel = $topFrame->Label(-text => "Grid Input", -background => "red")->pack(-side => "top");
-    
     my $leftFrame = $mainFrame->Frame(-background => "black")->pack(-side => 'left', -fill => 'x');
     $leftFrame->Label(-text => "Playground", -background => "green", -font => $code_font)->pack(-fill => 'x');
     
@@ -102,12 +108,36 @@ sub StartGame{
     $presetBox->selectionSet(0);
 
     my $lowerLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
-    my $saveButton = $lowerLeftFrame->Button(-text => "Save", -font => $code_font)->pack(-fill => 'x');
-    $saveButton->configure(-command => sub {
-        
-    });
+    my $saveButton = $lowerLeftFrame->Button(-text => "Save", -font => $code_font, -command => sub {
+        RunGame if $isPlaying;
+        my $filePath = $window->getSaveFile(-title => "Save current state", -initialfile => "state_file");
+        if (defined $filePath){
+            truncate $filePath, 0;
+            open(FH, '>>', $filePath) or ErrorDialog('Error!', 'Failed to save file');
+            foreach my $row(0..$maxLength - 1){
+                foreach my $col(0..$maxLength - 1){
+                    print FH $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
+                }
+            }
+            close FH;
+        }
+    })->pack(-fill => 'x');
     my $loadButton = $lowerLeftFrame->Button(-text => "Load", -font => $code_font, -command => sub {
-        
+        RunGame if $isPlaying;
+        my $filePath = $window->getOpenFile(-title => "Load saved-state");
+        if (defined $filePath){
+            open(FH, '<', $filePath) or ErrorDialog('Error!', 'Failed to load file');
+            my @data = split(//, <FH>);
+            $maxLength = sqrt scalar @data;
+            $grid = new GOLGrid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity);
+            foreach my $row(0..$maxLength - 1){
+                foreach my $col(0..$maxLength - 1){
+                    $grid->UpdateGridPoint($data[$row * $maxLength + $col], $row, $col, $grid->{_currentGrid});
+                }
+            }
+            UpdateGame;
+            close FH;
+        }
     })->pack(-fill => 'x');
 
     my $canvasSize = $grid->{_maxLength} * $grid->{_boxSize};

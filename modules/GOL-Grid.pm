@@ -32,8 +32,8 @@ sub ResetCurrentGrid{
 }
 sub VerifyPoint{
    my($self, $row, $col) = @_;
-   $row = $row % $self->{_maxLength} if $row => $self->{_maxLength};
-   $col = $col % $self->{_maxLength} if $col => $self->{_maxLength};
+   $row = $row % $self->{_maxLength} if $row >= $self->{_maxLength};
+   $col = $col % $self->{_maxLength} if $col >= $self->{_maxLength};
    ($row, $col);
 }
 sub GetNeighbours{
@@ -138,8 +138,8 @@ sub CreateMatrix{
       foreach my $nCol(0..scalar @{$matrix[$nRow]} - 1){
          my ($y, $x) = $self->VerifyPoint($row + $nRow, $col + $nCol);
          my $state = $matrix[$nRow]->[$nCol];
-         print $state if $state;
          $self->UpdateGridPoint($state, $y, $x, $self->{_currentGrid});
+         $self->UpdateGridPoint($state, $y, $x, $self->{_previousGrid});
       }
    }
 }
@@ -147,12 +147,12 @@ sub CreateMatrix{
 sub SetPreset{
    my ($self, $row, $col, $type) = @_;
    my $presets = {
-      'Dot' => \&{GOLGrid::CreateDot},
-      'Glider' => \&{GOLGrid::CreateGlider},
-      'Gun' => \&{GOLGrid::CreateGun},
-      'Eater' => \&{GOLGrid::CreateEater},
-      'Spinner' => \&{GOLGrid::CreateSpinner},
-      'Flower' => \&{GOLGrid::CreateFlower},
+      'Dot' => \&GOLGrid::CreateDot,
+      'Glider' => \&GOLGrid::CreateGlider,
+      'Gun' => \&GOLGrid::CreateGun,
+      'Eater' => \&GOLGrid::CreateEater,
+      'Spinner' => \&GOLGrid::CreateSpinner,
+      'Flower' => \&GOLGrid::CreateFlower,
       'default' => sub { print "\nPreset not found.\t:(\n"; exit; }
    };
    $presets->{$type} ? $presets->{$type}->($self, $row, $col) : $presets->{'default'}->();
