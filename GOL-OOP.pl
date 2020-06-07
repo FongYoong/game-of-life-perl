@@ -9,14 +9,15 @@ use GOLGrid;
 
 $| = 1;
 
-my $grid = new GOLGrid('maxLength'=>30, 'boxSize'=>20, 'vicinity'=>1, 'delay'=>0.5);
+my $grid = new GOLGrid('maxLength'=>50, 'boxSize'=>20, 'vicinity'=>1);
 my $window;
 my $canvas;
-my $delay = 0.5 * 1000;
+my $delay = 0.1 * 1000; #0.05 second is the minimum
 my $isPlaying = 0;
 my $mouseClicked = 0;
 my $keyXDown = 0;
 my $playID;
+my $presetType = "Dot";
 
 sub PrintTerminalGrid{
     system("clear");
@@ -69,37 +70,63 @@ sub StartGame{
     $grid->CreateFlower(3, 20);
     $grid->CreateGlider(2,5);
     $grid->CreateGlider(10,5);
-    $window = MainWindow->new;
-    $window->title("Game of Life - Intel Edition");
+    $window = MainWindow->new(-title => "Game of Life - Intel Edition");
     my $code_font = $window->fontCreate('code', -family => 'courier', -size => 20);
     my $mainFrame = $window->Frame()->pack(-side => 'top', -fill => 'x');
-    my $topFrame = $mainFrame->Frame(-background => "red")->pack(-side => 'top', -fill => 'x');
-    $topFrame->Label(-text => "User Input", -background => "red")->pack(-side => "top");
-    my $leftFrame = $mainFrame->Frame(-background => "black")->pack(-side => 'left', -fill => 'y');
+    #my $topFrame = $mainFrame->Frame(-background => "red")->pack(-side => 'top', -fill => 'x');
+    #my $topLabel = $topFrame->Label(-text => "Grid Input", -background => "red")->pack(-side => "top");
+    
+    my $leftFrame = $mainFrame->Frame(-background => "black")->pack(-side => 'left', -fill => 'x');
     $leftFrame->Label(-text => "Playground", -background => "green", -font => $code_font)->pack(-fill => 'x');
-    my $playButton = $leftFrame->Checkbutton(-text => "Play", -font => $code_font)->pack(-fill => 'x');
+    
+    my $upperLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
+    my $playButton = $upperLeftFrame->Checkbutton(-text => "Play", -font => $code_font)->pack(-fill => 'x');
     $playButton->configure(-command => sub {
         $playButton->configure(-text => $isPlaying?"Resume":"Pause");
         RunGame;
         $playID = $window->repeat($delay, \&UpdateGame) if $isPlaying;
     });
-    my $resetButton = $leftFrame->Button(-text => "Reset", -font => $code_font, -command => sub {
+    my $resetButton = $upperLeftFrame->Button(-text => "Reset", -font => $code_font, -command => sub {
         $playButton->deselect;
         $playButton->configure(-text => "Play");
         ClearGame;
     })->pack(-fill => 'x');
+
+    my $midLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
+    my $presetBox = $midLeftFrame->Scrolled("Listbox", -scrollbars => "e", -selectmode => "single",
+    -selectforeground => 'red', -selectbackground => 'green', -selectborderwidth => 5, -font => $code_font)->pack(-fill => 'x');
+    $presetBox->insert('end', qw/Dot Glider Gun Eater Spinner Flower/);
+    $presetBox->bind('<1>', sub {
+        $presetType = $presetBox->get($presetBox->curselection());
+    });
+    $presetBox->selectionSet(0);
+
+    my $lowerLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
+    my $saveButton = $lowerLeftFrame->Button(-text => "Save", -font => $code_font)->pack(-fill => 'x');
+    $saveButton->configure(-command => sub {
+        
+    });
+    my $loadButton = $lowerLeftFrame->Button(-text => "Load", -font => $code_font, -command => sub {
+        
+    })->pack(-fill => 'x');
+
     my $canvasSize = $grid->{_maxLength} * $grid->{_boxSize};
-    $canvas = $mainFrame->Canvas(-width=>$canvasSize, -height=>$canvasSize)->grid->pack(-side => "right");
+    $canvas = $mainFrame->Canvas(-width=>$canvasSize, -height=>$canvasSize, -borderwidth => 5, -relief => 'raised')->grid->pack(-side => 'right', -fill => 'x');
     $canvas->configure("-scrollregion" => [0,0, $canvasSize , $canvasSize]);
     $canvas->createGrid(0, 0, $grid->{_boxSize}, $grid->{_boxSize});
     $canvas->focusFollowsMouse;
     my $pressedEvent = sub {
-        my $state = shift @_;
+        my $clickType = shift @_;
         my ($c) = @_;
         my $event = $c->XEvent;
         my $x = int ($c->canvasx( $event->x ) / $grid->{_boxSize});
         my $y = int ($c->canvasy( $event->y ) / $grid->{_boxSize});
-        $grid->UpdateGridPoint($state, $y, $x, $grid->{_currentGrid});
+        if($clickType){
+            $grid->SetPreset($y, $x, $presetType);
+        }
+        else{
+            $grid->UpdateGridPoint(0, $y, $x, $grid->{_currentGrid});
+        }
         RunGame if $isPlaying;
         UpdateGame;
         $playButton->deselect;
