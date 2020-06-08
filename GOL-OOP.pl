@@ -17,7 +17,7 @@ my $destroyAtBorder = 0;
 my $grid = new GOL_Grid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
 my $window;
 my $canvas;
-my $delay = 0.05 * 1000; #0.1 second is the minimum for 50 maxLength
+my $delay = 0.1 * 1000; #0.1 second is the minimum for 50 maxLength
 my $isPlaying = 0;
 my $mouseClicked = 0;
 my $keyXDown = 0;
@@ -36,17 +36,17 @@ sub PrintTerminalGrid{
     }
 }
 sub PrintCanvasGrid{
-   foreach my $row (0 .. $grid->{_maxLength} - 1){
-      foreach my $col (0 .. $grid->{_maxLength} - 1){
-         my $currentState = $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
-         if($currentState){
-            my @positionStart= ($col * $grid->{_boxSize}, $row * $grid->{_boxSize});
-            my @positionEnd= (($col + 1) * $grid->{_boxSize}, ($row + 1) * $grid->{_boxSize});
-            my $color = $currentState == $grid->GetCurrentState($row, $col, $grid->{_previousGrid}) ?'blue':'green';
-            $canvas->createOval(@positionStart, @positionEnd, -fill=> $color, -tags => "points");
-         }
-      }
-   }
+    foreach my $row (0 .. $grid->{_maxLength} - 1){
+        foreach my $col (0 .. $grid->{_maxLength} - 1){
+            my $currentState = $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
+            if($currentState){
+                my @positionStart= ($col * $grid->{_boxSize}, $row * $grid->{_boxSize});
+                my @positionEnd= (($col + 1) * $grid->{_boxSize}, ($row + 1) * $grid->{_boxSize});
+                my $color = $currentState == $grid->GetCurrentState($row, $col, $grid->{_previousGrid}) ?'blue':'green';
+                $canvas->createOval(@positionStart, @positionEnd, -fill=> $color, -tags => "points");
+            }
+        }
+    }
 }
 sub ErrorDialog{
     my ($title, $message) = @_;

@@ -11,8 +11,8 @@ use GOL_Grid;
 $| = 1;
 
 my $windowTitle = "Game of Life - Intel Edition";
-my $boxSize = 30;
-my $maxLength = 10;
+my $boxSize = 10;
+my $maxLength = 50;
 my $vicinity = 1;
 my $destroyAtBorder = 1;
 my $grid = new GOL_Grid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
@@ -34,18 +34,30 @@ sub PrintTerminalGrid{
         print "\n";
     }
 }
+sub NormaliseCanvasPosition{
+    my($x, $y, $length) = (@_, ($grid->{_maxLength} - 1) / 2);
+    my @rectified = (($x - $length)/$length, -($y - $length)/$length);
+    @rectified;
+}
 sub PrintCanvasGrid{
-   foreach my $row (0 .. $grid->{_maxLength} - 1){
-      foreach my $col (0 .. $grid->{_maxLength} - 1){
-         my $currentState = $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
-         if($currentState){
-            my @positionStart= ($col * $grid->{_boxSize}, $row * $grid->{_boxSize});
-            my @positionEnd= (($col + 1) * $grid->{_boxSize}, ($row + 1) * $grid->{_boxSize});
-            my $color = $currentState == $grid->GetCurrentState($row, $col, $grid->{_previousGrid}) ?'blue':'green';
-            #$canvas->createOval(@positionStart, @positionEnd, -fill=> $color, -tags => "points");
-         }
-      }
-   }
+    glClearColor(0, 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glOrtho(-1, 1, -1, 1, -1, 1);
+    glPointSize($boxSize);
+    glBegin(GL_POINTS);
+    foreach my $row (0 .. $grid->{_maxLength} - 1){
+        foreach my $col (0 .. $grid->{_maxLength} - 1){
+            my $currentState = $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
+            if($currentState){
+                my @position = NormaliseCanvasPosition($col, $row);
+                my $color = $currentState == $grid->GetCurrentState($row, $col, $grid->{_previousGrid}) ?1:0;
+                glColor3f(0, !$color, $color);
+                glVertex2f(@position);
+            }
+        }
+    }
+    glEnd;
+    glFlush;
 }
 sub ErrorDialog{
     my ($title, $message) = @_;
@@ -53,7 +65,6 @@ sub ErrorDialog{
 }
 sub UpdateGame{
     $grid->UpdateCurrentGrid if $isPlaying;
-    $canvas->delete('points');
     PrintCanvasGrid;
     PrintTerminalGrid;
 }
@@ -73,10 +84,11 @@ sub ClearGame{
 }
 sub StartGame{
     $grid->ResetCurrentGrid();
-    $grid->CreateLine(10, 10, 3);
-    $grid->CreateFlower(3, 20);
-    $grid->CreateGlider(2,5);
-    $grid->CreateGlider(10,5);
+    #$grid->CreateLine(10, 10, 3);
+    #$grid->CreateFlower(3, 20);
+    #$grid->CreateGlider(2,5);
+    #$grid->CreateGlider(10,5);
+    $grid->CreateGun(10, 10);
     $window = MainWindow->new(-title => $windowTitle);
     my $code_font = $window->fontCreate('code', -family => 'courier', -size => 20);
     my $mainFrame = $window->Frame()->pack(-side => 'top', -fill => 'x');
@@ -99,13 +111,13 @@ sub StartGame{
     my $midLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
 
     my $lowerLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
-
-    my $canvasSize = $grid->{_maxLength} * $grid->{_boxSize};
-    $canvas = $mainFrame->Canvas(-width=>$canvasSize, -height=>$canvasSize, -borderwidth => 5, -relief => 'raised')->grid->pack(-side => 'right', -fill => 'x');
-    $canvas->configure("-scrollregion" => [0,0, $canvasSize , $canvasSize]);
-    $canvas->createGrid(0, 0, $grid->{_boxSize}, $grid->{_boxSize});
     
-    #PrintCanvasGrid;
+    my $canvasSize = $grid->{_maxLength} * $grid->{_boxSize};
+    $canvas = $mainFrame->Frame(-bg => "black",  -width => $canvasSize, -height => $canvasSize, -borderwidth => 5, -relief => 'raised')->pack(-side => 'right', -fill => "both");
+    $canvas->waitVisibility;
+    glpOpenWindow(parent=> hex($canvas->id), width => $canvasSize, height => $canvasSize);
+    PrintCanvasGrid;
     MainLoop;
 }
+
 StartGame;

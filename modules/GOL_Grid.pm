@@ -15,8 +15,8 @@ sub new {
       _previousGrid => undef
    };
    bless $self, $class;
-   $self->ResetCurrentGrid;
-   $self->{_previousGrid} = $self->{_currentGrid};
+   $self->{_currentGrid} = $self->MakeNewGrid;
+   $self->{_previousGrid} = $self->MakeNewGrid;
    return $self;
 }
 sub MakeNewGrid{
@@ -31,7 +31,7 @@ sub ResetCurrentGrid{
    my ($self) = @_;
    $self->{_currentGrid} = $self->MakeNewGrid();
 }
-sub VerifyPoint{
+sub RectifyPoint{
    my($self, $row, $col) = @_;
    $row = $row % $self->{_maxLength} if $row >= $self->{_maxLength};
    $col = $col % $self->{_maxLength} if $col >= $self->{_maxLength};
@@ -43,7 +43,7 @@ sub GetNeighbours{
    foreach my $nRow ($row - $self->{_vicinity} .. $row + $self->{_vicinity}){
       foreach my $nCol ($col - $self->{_vicinity} .. $col + $self->{_vicinity}){
          if($nRow != $row || $nCol != $col){
-            my @verified = $self->VerifyPoint($nRow, $nCol);
+            my @verified = $self->RectifyPoint($nRow, $nCol);
             if ($self->{_destroyAtBorder} && ($nCol >= $self->{_maxLength} || $nCol < 0 || $nRow >= $self->{_maxLength} || $nRow < 0)){
                $verified[2] = 1;
             }
@@ -77,12 +77,12 @@ sub UpdateGridPoint{
 }
 sub UpdateGrid{
    my ($self, $grid) = @_;
-   my $nextGrid = $self->MakeNewGrid();
+   my $nextGrid = $self->MakeNewGrid;
    foreach my $row (0 .. $self->{_maxLength} - 1){
       foreach my $col (0 .. $self->{_maxLength} - 1){
-            my $currentState = $self->GetCurrentState($row, $col, $grid);
-            my $nextState = $self->GetNextState($currentState, $row, $col, $grid);
-            $self->UpdateGridPoint($nextState, $row, $col, $nextGrid);
+         my $currentState = $self->GetCurrentState($row, $col, $grid);
+         my $nextState = $self->GetNextState($currentState, $row, $col, $grid);
+         $self->UpdateGridPoint($nextState, $row, $col, $nextGrid);
       }
    }
    $nextGrid;
@@ -146,7 +146,7 @@ sub CreateMatrix{
    my ($self, $row, $col, @matrix) = @_;
    foreach my $nRow(0..$#matrix){
       foreach my $nCol(0..scalar @{$matrix[$nRow]} - 1){
-         my ($y, $x) = $self->VerifyPoint($row + $nRow, $col + $nCol);
+         my ($y, $x) = $self->RectifyPoint($row + $nRow, $col + $nCol);
          my $state = $matrix[$nRow]->[$nCol];
          $self->UpdateGridPoint($state, $y, $x, $self->{_currentGrid});
          $self->UpdateGridPoint($state, $y, $x, $self->{_previousGrid});
