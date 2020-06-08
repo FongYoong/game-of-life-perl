@@ -10,14 +10,14 @@ use GOLGrid;
 $| = 1;
 
 my $windowTitle = "Game of Life - Intel Edition";
-my $boxSize = 15;
+my $boxSize = 10;
 my $maxLength = 50;
 my $vicinity = 1;
 my $destroyAtBorder = 0;
 my $grid = new GOLGrid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
 my $window;
 my $canvas;
-my $delay = 0.1 * 1000; #0.1 second is the minimum for 50 maxLength
+my $delay = 0.05 * 1000; #0.1 second is the minimum for 50 maxLength
 my $isPlaying = 0;
 my $mouseClicked = 0;
 my $keyXDown = 0;
@@ -56,7 +56,7 @@ sub UpdateGame{
     $grid->UpdateCurrentGrid if $isPlaying;
     $canvas->delete('points');
     PrintCanvasGrid;
-    #PrintTerminalGrid;
+    PrintTerminalGrid;
 }
 sub RunGame{
    if($isPlaying){
