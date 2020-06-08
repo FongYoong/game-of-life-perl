@@ -11,13 +11,14 @@ $| = 1;
 
 my $windowTitle = "Game of Life - Intel Edition";
 my $boxSize = 10;
-my $maxLength = 50;
+my $xLength = 100;
+my $yLength = 50;
 my $vicinity = 1;
 my $destroyAtBorder = 0;
-my $grid = new GOL_Grid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
+my $grid = new GOL_Grid('xLength'=>$xLength, 'yLength'=>$yLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
 my $window;
 my $canvas;
-my $delay = 0.1 * 1000; #0.1 second is the minimum for 50 maxLength
+my $delay = 0.1 * 1000;
 my $isPlaying = 0;
 my $mouseClicked = 0;
 my $keyXDown = 0;
@@ -27,8 +28,8 @@ my $presetType = "Dot";
 sub PrintTerminalGrid{
     system("clear");
     print "\n";
-    foreach my $row (0 .. $grid->{_maxLength} - 1){
-        foreach my $col (0 .. $grid->{_maxLength} - 1){
+    foreach my $row (0 .. $yLength - 1){
+        foreach my $col (0 .. $xLength - 1){
             my $currentState = $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
             $currentState? print "*" : print".";
         }
@@ -36,8 +37,8 @@ sub PrintTerminalGrid{
     }
 }
 sub PrintCanvasGrid{
-    foreach my $row (0 .. $grid->{_maxLength} - 1){
-        foreach my $col (0 .. $grid->{_maxLength} - 1){
+    foreach my $row (0 .. $yLength - 1){
+        foreach my $col (0 .. $xLength - 1){
             my $currentState = $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
             if($currentState){
                 my @positionStart= ($col * $grid->{_boxSize}, $row * $grid->{_boxSize});
@@ -115,8 +116,9 @@ sub StartGame{
         if (defined $filePath){
             truncate $filePath, 0;
             open(FH, '>>', $filePath) or ErrorDialog('Error!', 'Failed to save file');
-            foreach my $row(0..$maxLength - 1){
-                foreach my $col(0..$maxLength - 1){
+            print FH $xLength, "\n", $yLength, "\n";
+            foreach my $row(0..$yLength - 1){
+                foreach my $col(0..$xLength - 1){
                     print FH $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
                 }
             }
@@ -128,12 +130,16 @@ sub StartGame{
         my $filePath = $window->getOpenFile(-title => "Load saved-state");
         if (defined $filePath){
             open(FH, '<', $filePath) or ErrorDialog('Error!', 'Failed to load file');
-            my @data = split(//, <FH>);
-            $maxLength = sqrt scalar @data;
-            $grid = new GOL_Grid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
-            foreach my $row(0..$maxLength - 1){
-                foreach my $col(0..$maxLength - 1){
-                    $grid->UpdateGridPoint($data[$row * $maxLength + $col], $row, $col, $grid->{_currentGrid});
+            my @lines=();
+            while (my $line = <FH>) {
+                push @lines, $line;
+            }
+            ($xLength, $yLength) = ($lines[0], $lines[1]);
+            my @data = split(//, $lines[2]);
+            $grid = new GOL_Grid('xLength'=>$xLength, 'yLength'=>$yLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
+            foreach my $row(0..$yLength - 1){
+                foreach my $col(0..$xLength - 1){
+                    $grid->UpdateGridPoint($data[$row * $xLength + $col], $row, $col, $grid->{_currentGrid});
                 }
             }
             UpdateGame;
@@ -141,10 +147,10 @@ sub StartGame{
         }
     })->pack(-fill => 'x');
 
-    my $canvasSize = $grid->{_maxLength} * $grid->{_boxSize};
-    $canvas = $mainFrame->Canvas(-width=>$canvasSize, -height=>$canvasSize, -borderwidth => 5, -relief => 'raised')->grid->pack(-side => 'right', -fill => 'x');
-    $canvas->configure("-scrollregion" => [0,0, $canvasSize , $canvasSize]);
-    $canvas->createGrid(0, 0, $grid->{_boxSize}, $grid->{_boxSize});
+    my ($xSize, $ySize) = ($xLength * $boxSize, $yLength * $boxSize);
+    $canvas = $mainFrame->Canvas(-width=>$xSize, -height=>$ySize, -borderwidth => 5, -relief => 'raised')->grid->pack(-side => 'right', -fill => 'x');
+    $canvas->configure("-scrollregion" => [0,0, $xSize , $yLength * $boxSize]);
+    $canvas->createGrid(0, 0, $boxSize, $boxSize);
     $canvas->focusFollowsMouse;
     my $pressedEvent = sub {
         my $clickType = shift @_;

@@ -7,7 +7,8 @@ sub new {
    my $class = shift;
    my %args = @_;
    my $self = {
-      _maxLength => $args{'maxLength'},
+      _xLength => $args{'xLength'},
+      _yLength => $args{'yLength'},
       _boxSize => $args{'boxSize'},
       _vicinity => $args{'vicinity'},
       _destroyAtBorder => $args{'destroyAtBorder'},
@@ -19,11 +20,13 @@ sub new {
    $self->{_previousGrid} = $self->MakeNewGrid;
    return $self;
 }
+my ($iXPos, $fXPos, $iYPos, $fYPos) = (0, 0, 0, 0);
+
 sub MakeNewGrid{
    my ($self) = @_;
    my @grid = ();
-   foreach my $row(0..$self->{_maxLength} - 1){
-      $grid[$row] = ([(0)x$self->{_maxLength}]);
+   foreach my $row(0..$self->{_yLength} - 1){
+      $grid[$row] = ([(0)x$self->{_xLength}]);
    }
    \@grid;
 }
@@ -33,9 +36,13 @@ sub ResetCurrentGrid{
 }
 sub RectifyPoint{
    my($self, $row, $col) = @_;
-   $row = $row % $self->{_maxLength} if $row >= $self->{_maxLength};
-   $col = $col % $self->{_maxLength} if $col >= $self->{_maxLength};
+   $row = $row % $self->{_yLength} if $row >= $self->{_yLength};
+   $col = $col % $self->{_xLength} if $col >= $self->{_xLength};
    ($row, $col);
+}
+sub ExceededBorder{
+   my ($self, $row, $col) = @_;
+   ($col >= $self->{_yLength} || $col < 0 || $row >= $self->{_xLength} || $row < 0);
 }
 sub GetNeighbours{
    my($self, $row, $col) = @_;
@@ -44,7 +51,7 @@ sub GetNeighbours{
       foreach my $nCol ($col - $self->{_vicinity} .. $col + $self->{_vicinity}){
          if($nRow != $row || $nCol != $col){
             my @verified = $self->RectifyPoint($nRow, $nCol);
-            if ($self->{_destroyAtBorder} && ($nCol >= $self->{_maxLength} || $nCol < 0 || $nRow >= $self->{_maxLength} || $nRow < 0)){
+            if ($self->{_destroyAtBorder} && $self->ExceededBorder($row, $col)){
                $verified[2] = 1;
             }
             push @neighbours, [@verified];
@@ -78,8 +85,8 @@ sub UpdateGridPoint{
 sub UpdateGrid{
    my ($self, $grid) = @_;
    my $nextGrid = $self->MakeNewGrid;
-   foreach my $row (0 .. $self->{_maxLength} - 1){
-      foreach my $col (0 .. $self->{_maxLength} - 1){
+   foreach my $row ($iYPos .. $fYPos){
+      foreach my $col ($iXPos .. $fXPos){
          my $currentState = $self->GetCurrentState($row, $col, $grid);
          my $nextState = $self->GetNextState($currentState, $row, $col, $grid);
          $self->UpdateGridPoint($nextState, $row, $col, $nextGrid);
@@ -87,8 +94,37 @@ sub UpdateGrid{
    }
    $nextGrid;
 }
+
+sub AdaptRange{
+   my ($self) = @_;
+   my @rows = ();
+   my @cols = ();
+   foreach my $row (0 .. $self->{_yLength} - 1){
+      foreach my $col (0 .. $self->{_xLength} - 1){
+         if($self->GetCurrentState($row, $col, $self->{_currentGrid})){
+            if ($self->{_destroyAtBorder} && $self->ExceededBorder($row, $col)){
+               push @rows, $row;
+               push @cols, $col;
+            }
+            else{
+               foreach my $i(-1..1){
+                  my @r = $self->RectifyPoint($row + $i, $col);
+                  push @rows, $r[0];
+               }
+               foreach my $i(-1..1){
+                  my @c = $self->RectifyPoint($row, $col + $i);
+                  push @cols, $c[1];
+               }
+            }
+         }
+      }
+   }
+   ($iYPos,$fYPos) = (sort {$a <=> $b} @rows)[0,-1];
+   ($iXPos,$fXPos) = (sort {$a <=> $b} @cols)[0,-1];
+}
 sub UpdateCurrentGrid{
    my ($self) = @_;
+   $self->AdaptRange;
    $self->{_previousGrid} = $self->{_currentGrid};
    $self->{_currentGrid} = $self->UpdateGrid($self->{_currentGrid});
 }
