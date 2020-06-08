@@ -6,7 +6,7 @@ use Cwd  qw(abs_path);
 use lib dirname(dirname abs_path $0) . '/GOL/modules';
 use Tk;
 use OpenGL;
-use GOLGrid;
+use GOL_Grid;
 
 $| = 1;
 
@@ -15,7 +15,7 @@ my $boxSize = 30;
 my $maxLength = 10;
 my $vicinity = 1;
 my $destroyAtBorder = 1;
-my $grid = new GOLGrid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
+my $grid = new GOL_Grid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
 my $window;
 my $canvas;
 my $delay = 0.01 * 1000; #0.1 second is the minimum for 50 maxLength

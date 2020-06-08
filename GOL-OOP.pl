@@ -5,7 +5,7 @@ use File::Basename qw(dirname);
 use Cwd  qw(abs_path);
 use lib dirname(dirname abs_path $0) . '/GOL/modules';
 use Tk;
-use GOLGrid;
+use GOL_Grid;
 
 $| = 1;
 
@@ -14,7 +14,7 @@ my $boxSize = 10;
 my $maxLength = 50;
 my $vicinity = 1;
 my $destroyAtBorder = 0;
-my $grid = new GOLGrid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
+my $grid = new GOL_Grid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
 my $window;
 my $canvas;
 my $delay = 0.05 * 1000; #0.1 second is the minimum for 50 maxLength
@@ -130,7 +130,7 @@ sub StartGame{
             open(FH, '<', $filePath) or ErrorDialog('Error!', 'Failed to load file');
             my @data = split(//, <FH>);
             $maxLength = sqrt scalar @data;
-            $grid = new GOLGrid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
+            $grid = new GOL_Grid('maxLength'=>$maxLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
             foreach my $row(0..$maxLength - 1){
                 foreach my $col(0..$maxLength - 1){
                     $grid->UpdateGridPoint($data[$row * $maxLength + $col], $row, $col, $grid->{_currentGrid});

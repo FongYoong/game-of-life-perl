@@ -1,4 +1,4 @@
-package GOLGrid;
+package GOL_Grid;
 
 use strict;
 use warnings;
@@ -157,12 +157,12 @@ sub CreateMatrix{
 sub SetPreset{
    my ($self, $row, $col, $type) = @_;
    my $presets = {
-      'Dot' => \&GOLGrid::CreateDot,
-      'Glider' => \&GOLGrid::CreateGlider,
-      'Gun' => \&GOLGrid::CreateGun,
-      'Eater' => \&GOLGrid::CreateEater,
-      'Spinner' => \&GOLGrid::CreateSpinner,
-      'Flower' => \&GOLGrid::CreateFlower,
+      'Dot' => \&GOL_Grid::CreateDot,
+      'Glider' => \&GOL_Grid::CreateGlider,
+      'Gun' => \&GOL_Grid::CreateGun,
+      'Eater' => \&GOL_Grid::CreateEater,
+      'Spinner' => \&GOL_Grid::CreateSpinner,
+      'Flower' => \&GOL_Grid::CreateFlower,
       'default' => sub { print "\nPreset not found.\t:(\n"; exit; }
    };
    $presets->{$type} ? $presets->{$type}->($self, $row, $col) : $presets->{'default'}->();
