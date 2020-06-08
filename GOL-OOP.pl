@@ -116,11 +116,12 @@ sub StartGame{
         if (defined $filePath){
             truncate $filePath, 0;
             open(FH, '>>', $filePath) or ErrorDialog('Error!', 'Failed to save file');
-            print FH $xLength, "\n", $yLength, "\n";
+            print FH $xLength, $/, $yLength, $/;
             foreach my $row(0..$yLength - 1){
                 foreach my $col(0..$xLength - 1){
                     print FH $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
                 }
+                print FH $/;
             }
             close FH;
         }
@@ -134,12 +135,13 @@ sub StartGame{
             while (my $line = <FH>) {
                 push @lines, $line;
             }
-            ($xLength, $yLength) = ($lines[0], $lines[1]);
-            my @data = split(//, $lines[2]);
+            chomp @lines;
+            ($xLength, $yLength) = (shift @lines, shift @lines);
             $grid = new GOL_Grid('xLength'=>$xLength, 'yLength'=>$yLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
-            foreach my $row(0..$yLength - 1){
+            foreach my $line (0..$#lines){
+                my @data = split(//, $lines[$line]);
                 foreach my $col(0..$xLength - 1){
-                    $grid->UpdateGridPoint($data[$row * $xLength + $col], $row, $col, $grid->{_currentGrid});
+                    $grid->UpdateGridPoint($data[$col], $line, $col, $grid->{_currentGrid});
                 }
             }
             UpdateGame;
