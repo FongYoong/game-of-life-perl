@@ -27,7 +27,7 @@ sub PrintTerminalGrid{
     system("clear");
     print "\n";
     foreach my $row (0 .. $yLength - 1){
-        foreach my $col (0 .. $yLength - 1){
+        foreach my $col (0 .. $xLength - 1){
             my $currentState = $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
             $currentState? print "*" : print".";
         }
