@@ -15,6 +15,7 @@ my $xLength = 100;
 my $yLength = 50;
 my $vicinity = 1;
 my $destroyAtBorder = 0;
+my $showRegion = 1;
 my $grid = new GOL_Grid('xLength'=>$xLength, 'yLength'=>$yLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
 my $window;
 my $canvas;
@@ -28,13 +29,35 @@ my $presetType = "Dot";
 sub PrintTerminalGrid{
     system("clear");
     print "\n";
+    my %rangePoints = ();
+    my @range = $grid->GetRange;
+    if ($showRegion){
+        foreach my $row ($range[2] .. $range[3]){
+            $rangePoints{"$row $range[0]"} = 1;
+        }
+        foreach my $row ($range[2] .. $range[3]){
+            $rangePoints{"$row $range[1]"} = 1;
+        }
+        foreach my $col ($range[0] .. $range[1]){
+            $rangePoints{"$range[2] $col"} = 1;
+        }
+        foreach my $col ($range[0] .. $range[1]){
+            $rangePoints{"$range[3] $col"} = 1;
+        }
+    }
     foreach my $row (0 .. $yLength - 1){
         foreach my $col (0 .. $xLength - 1){
-            my $currentState = $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
-            $currentState? print "*" : print".";
+            if ($showRegion && exists($rangePoints{"$row $col"})){
+                print $row == $range[2] || $row == $range[3] ? '=' : '|';
+            }
+            else{
+                my $currentState = $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
+                $currentState? print "*" : print".";
+            }
         }
         print "\n";
     }
+    
 }
 sub PrintCanvasGrid{
     foreach my $row (0 .. $yLength - 1){
@@ -48,10 +71,28 @@ sub PrintCanvasGrid{
             }
         }
     }
-}
-sub ErrorDialog{
-    my ($title, $message) = @_;
-    $window->messageBox(-title => $title, -message => $message, -type => 'Ok', -icon => 'error');
+    if ($showRegion){
+        my @range = $grid->GetRange;
+        foreach my $row ($range[2] .. $range[3]){
+            my @positionStart= ($range[0] * $grid->{_boxSize}, $row * $grid->{_boxSize});
+            my @positionEnd= (($range[0] + 1) * $grid->{_boxSize}, ($row + 1) * $grid->{_boxSize});
+            $canvas->createOval(@positionStart, @positionEnd, -fill=> 'red', -tags => "points");
+        }
+        foreach my $row ($range[2] .. $range[3]){
+            my @positionStart= ($range[1] * $grid->{_boxSize}, $row * $grid->{_boxSize});
+            my @positionEnd= (($range[1] + 1) * $grid->{_boxSize}, ($row + 1) * $grid->{_boxSize});
+            $canvas->createOval(@positionStart, @positionEnd, -fill=> 'red', -tags => "points");
+        }
+        foreach my $col ($range[0] .. $range[1]){
+            my @positionStart= ($col * $grid->{_boxSize}, $range[2] * $grid->{_boxSize});
+            my @positionEnd= (($col + 1) * $grid->{_boxSize}, ($range[2] + 1) * $grid->{_boxSize});
+            $canvas->createOval(@positionStart, @positionEnd, -fill=> 'red', -tags => "points");
+        }
+        foreach my $col ($range[0] .. $range[1]){
+            my @positionStart= ($col * $grid->{_boxSize}, $range[3] * $grid->{_boxSize});
+            my @positionEnd= (($col + 1) * $grid->{_boxSize}, ($range[3] + 1) * $grid->{_boxSize});
+            $canvas->createOval(@positionStart, @positionEnd, -fill=> 'red', -tags => "points");        }
+    }
 }
 sub UpdateGame{
     $grid->UpdateCurrentGrid if $isPlaying;
@@ -72,6 +113,10 @@ sub ClearGame{
    RunGame if $isPlaying;
    $grid->ResetCurrentGrid();
    UpdateGame;
+}
+sub ErrorDialog{
+    my ($title, $message) = @_;
+    $window->messageBox(-title => $title, -message => $message, -type => 'Ok', -icon => 'error');
 }
 sub StartGame{
     $grid->ResetCurrentGrid();
@@ -148,6 +193,12 @@ sub StartGame{
             close FH;
         }
     })->pack(-fill => 'x');
+    my $showRegionButton = $lowerLeftFrame->Checkbutton(-text => $showRegion?"Hide Region":"Show Region", -font => $code_font)->pack(-fill => 'x');
+    $showRegionButton->configure(-command => sub {
+        $showRegion = !$showRegion;
+        $showRegionButton->configure(-text => $showRegion?"Hide Region":"Show Region");
+        UpdateGame;
+    });
 
     my ($xSize, $ySize) = ($xLength * $boxSize, $yLength * $boxSize);
     $canvas = $mainFrame->Canvas(-width=>$xSize, -height=>$ySize, -borderwidth => 5, -relief => 'raised')->grid->pack(-side => 'right', -fill => 'x');

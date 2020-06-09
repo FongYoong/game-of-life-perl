@@ -21,7 +21,10 @@ sub new {
    return $self;
 }
 my ($iXPos, $fXPos, $iYPos, $fYPos) = (0, 0, 0, 0);
-
+sub GetRange{
+   my ($self) = @_;
+   ($iXPos, $fXPos, $iYPos, $fYPos);
+}
 sub MakeNewGrid{
    my ($self) = @_;
    my @grid = ();

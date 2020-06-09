@@ -16,6 +16,7 @@ my $xLength = 100;
 my $yLength = 50;
 my $vicinity = 1;
 my $destroyAtBorder = 1;
+my $showRegion = 1;
 my $grid = new GOL_Grid('xLength'=>$xLength, 'yLength'=>$yLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
 my $window;
 my $canvas;
@@ -23,13 +24,36 @@ my $delay = 0.01 * 1000;
 my $isPlaying = 0;
 my $playID;
 
+my @operators = ();
+
 sub PrintTerminalGrid{
     system("clear");
     print "\n";
+    my %rangePoints = ();
+    my @range = $grid->GetRange;
+    if ($showRegion){
+        foreach my $row ($range[2] .. $range[3]){
+            $rangePoints{"$row $range[0]"} = 1;
+        }
+        foreach my $row ($range[2] .. $range[3]){
+            $rangePoints{"$row $range[1]"} = 1;
+        }
+        foreach my $col ($range[0] .. $range[1]){
+            $rangePoints{"$range[2] $col"} = 1;
+        }
+        foreach my $col ($range[0] .. $range[1]){
+            $rangePoints{"$range[3] $col"} = 1;
+        }
+    }
     foreach my $row (0 .. $yLength - 1){
         foreach my $col (0 .. $xLength - 1){
-            my $currentState = $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
-            $currentState? print "*" : print".";
+            if ($showRegion && exists($rangePoints{"$row $col"})){
+                print $row == $range[2] || $row == $range[3] ? '=' : '|';
+            }
+            else{
+                my $currentState = $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
+                $currentState? print "*" : print".";
+            }
         }
         print "\n";
     }
@@ -56,12 +80,24 @@ sub PrintCanvasGrid{
             }
         }
     }
+    if ($showRegion){
+        my @range = $grid->GetRange;
+        glColor3f(1, 0, 0);
+        foreach my $row ($range[2] .. $range[3]){
+            glVertex2f(NormaliseCanvasPosition($range[0], $row));
+        }
+        foreach my $row ($range[2] .. $range[3]){
+            glVertex2f(NormaliseCanvasPosition($range[1], $row));
+        }
+        foreach my $col ($range[0] .. $range[1]){
+            glVertex2f(NormaliseCanvasPosition($col, $range[2]));
+        }
+        foreach my $col ($range[0] .. $range[1]){
+            glVertex2f(NormaliseCanvasPosition($col, $range[3]));
+        }
+    }
     glEnd;
     glFlush;
-}
-sub ErrorDialog{
-    my ($title, $message) = @_;
-    $window->messageBox(-title => $title, -message => $message, -type => 'Ok', -icon => 'error');
 }
 sub UpdateGame{
     $grid->UpdateCurrentGrid if $isPlaying;
@@ -81,6 +117,24 @@ sub ClearGame{
    RunGame if $isPlaying;
    $grid->ResetCurrentGrid();
    UpdateGame;
+}
+
+sub BooleanParser{
+    #A and B are the 2 variables
+    #The operators are !, &, |
+    my $text = @_;
+    my @captured = $text =~ /\((.*)\) *([!&|])? *([AaBb])?/;
+    if(@captured){
+        BooleanParser($text);
+    }
+    else{
+        #ErrorDialog("Error!", "Invalid expression");
+    }
+    
+}
+sub ErrorDialog{
+    my ($title, $message) = @_;
+    $window->messageBox(-title => $title, -message => $message, -type => 'Ok', -icon => 'error');
 }
 sub StartGame{
     $grid->ResetCurrentGrid();
@@ -107,6 +161,12 @@ sub StartGame{
         $playButton->configure(-text => "Play");
         ClearGame;
     })->pack(-fill => 'x');
+    my $showRegionButton = $upperLeftFrame->Checkbutton(-text => $showRegion?"Hide Region":"Show Region", -font => $code_font)->pack(-fill => 'x');
+    $showRegionButton->configure(-command => sub {
+        $showRegion = !$showRegion;
+        $showRegionButton->configure(-text => $showRegion?"Hide Region":"Show Region");
+        UpdateGame;
+    });
 
     my $midLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
 
