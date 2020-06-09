@@ -15,7 +15,7 @@ my $xLength = 100;
 my $yLength = 50;
 my $vicinity = 1;
 my $destroyAtBorder = 0;
-my $showRegion = 1;
+my $showRegion = 0;
 my $grid = new GOL_Grid('xLength'=>$xLength, 'yLength'=>$yLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
 my $window;
 my $canvas;
@@ -103,7 +103,7 @@ sub UpdateGame{
     }
     $canvas->delete('points');
     PrintCanvasGrid;
-    #PrintTerminalGrid;
+    PrintTerminalGrid;
 }
 sub RunGame{
    if($isPlaying){
@@ -129,16 +129,17 @@ sub StartGame{
     $grid->CreateFlower(3, 20);
     $grid->CreateGlider(2,5);
     $grid->CreateGlider(10,5);
+    $grid->AdaptRange;
     $window = MainWindow->new(-title => $windowTitle);
-    my $code_font = $window->fontCreate('code', -family => 'courier', -size => 20);
+    my $code_font = $window->fontCreate('code', -family => 'calibri', -size => 15);
     my $mainFrame = $window->Frame()->pack(-side => 'top', -fill => 'x');
     #my $topFrame = $mainFrame->Frame(-background => "red")->pack(-side => 'top', -fill => 'x');
     #my $topLabel = $topFrame->Label(-text => "Grid Input", -background => "red")->pack(-side => "top");
     my $leftFrame = $mainFrame->Frame(-background => "black")->pack(-side => 'left', -fill => 'x');
-    $leftFrame->Label(-text => "Playground", -background => "green", -font => $code_font)->pack(-fill => 'x');
+    $leftFrame->Label(-text => "Playground", -background => "#00e6ff", -borderwidth => 5, -relief => 'raised', -font => $code_font)->pack(-fill => 'x');
     
-    my $upperLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
-    my $playButton = $upperLeftFrame->Checkbutton(-text => "Play", -font => $code_font)->pack(-fill => 'x');
+    my $upperLeftFrame = $leftFrame->Frame(-background => "#ffae00", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
+    my $playButton = $upperLeftFrame->Checkbutton(-text => "Play", -font => $code_font)->pack(-fill => 'x', -pady => 5, -padx => 5);
     $playButton->configure(-command => sub {
         $playButton->configure(-text => $isPlaying?"Resume":"Pause");
         RunGame;
@@ -148,7 +149,7 @@ sub StartGame{
         $playButton->deselect;
         $playButton->configure(-text => "Play");
         ClearGame;
-    })->pack(-fill => 'x');
+    })->pack(-fill => 'x', -pady => 5, -padx => 5);
 
     my $midLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
     my $presetBox = $midLeftFrame->Scrolled("Listbox", -scrollbars => "e", -selectmode => "single",
@@ -159,12 +160,13 @@ sub StartGame{
     });
     $presetBox->selectionSet(0);
 
-    my $lowerLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
+    my $lowerLeftFrame = $leftFrame->Frame(-background => "#ff0008", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
     my $saveButton = $lowerLeftFrame->Button(-text => "Save", -font => $code_font, -command => sub {
         RunGame if $isPlaying;
+        $playButton->deselect;
+        $playButton->configure(-text => "Resume");
         my $filePath = $window->getSaveFile(-title => "Save current state", -initialfile => "state_file");
         if (defined $filePath){
-            #truncate $filePath, 0;
             open(FH, '>', $filePath) or ErrorDialog('Error!', 'Failed to save file');
             print FH $xLength, $/, $yLength, $/;
             foreach my $row(0..$yLength - 1){
@@ -175,9 +177,11 @@ sub StartGame{
             }
             close FH;
         }
-    })->pack(-fill => 'x');
+    })->pack(-fill => 'x', -pady => 5, -padx => 5);
     my $loadButton = $lowerLeftFrame->Button(-text => "Load", -font => $code_font, -command => sub {
         RunGame if $isPlaying;
+        $playButton->deselect;
+        $playButton->configure(-text => "Resume");
         my $filePath = $window->getOpenFile(-title => "Load saved-state");
         if (defined $filePath){
             open(FH, '<', $filePath) or ErrorDialog('Error!', 'Failed to load file');
@@ -197,8 +201,8 @@ sub StartGame{
             UpdateGame;
             close FH;
         }
-    })->pack(-fill => 'x');
-    my $showRegionButton = $lowerLeftFrame->Checkbutton(-text => $showRegion?"Hide Region":"Show Region", -font => $code_font)->pack(-fill => 'x');
+    })->pack(-fill => 'x', -pady => 5, -padx => 5);
+    my $showRegionButton = $lowerLeftFrame->Checkbutton(-text => $showRegion?"Hide Region":"Show Region", -font => $code_font)->pack(-fill => 'x', -pady => 5, -padx => 5);
     $showRegionButton->configure(-command => sub {
         $showRegion = !$showRegion;
         $showRegionButton->configure(-text => $showRegion?"Hide Region":"Show Region");

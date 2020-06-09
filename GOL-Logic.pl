@@ -16,7 +16,7 @@ my $xLength = 100;
 my $yLength = 50;
 my $vicinity = 1;
 my $destroyAtBorder = 1;
-my $showRegion = 1;
+my $showRegion = 0;
 my $grid = new GOL_Grid('xLength'=>$xLength, 'yLength'=>$yLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
 my $window;
 my $canvas;
@@ -24,14 +24,15 @@ my $delay = 0.01 * 1000;
 my $isPlaying = 0;
 my $playID;
 
-my @operators = ();
+my @booleanList = ();
+my $booleanText;
 
 sub PrintTerminalGrid{
     system("clear");
     print "\n";
     my %rangePoints = ();
     my @range = $grid->GetRange;
-    if ($showRegion){
+    if ($showRegion && @range){
         foreach my $row ($range[2] .. $range[3]){
             $rangePoints{"$row $range[0]"} = 1;
         }
@@ -100,7 +101,12 @@ sub PrintCanvasGrid{
     glFlush;
 }
 sub UpdateGame{
-    $grid->UpdateCurrentGrid if $isPlaying;
+    if ($isPlaying){
+        $grid->UpdateCurrentGrid;
+    }
+    else{
+        $grid->AdaptRange;
+    }
     PrintCanvasGrid;
     PrintTerminalGrid;
 }
@@ -119,18 +125,22 @@ sub ClearGame{
    UpdateGame;
 }
 
-sub BooleanParser{
+sub ParseBoolean{
     #A and B are the 2 variables
     #The operators are !, &, |
     my $text = @_;
     my @captured = $text =~ /\((.*)\) *([!&|])? *([AaBb])?/;
     if(@captured){
-        BooleanParser($text);
+        ParseBoolean($text);
     }
     else{
         #ErrorDialog("Error!", "Invalid expression");
     }
     
+    
+}
+sub GenerateBoolean{
+
 }
 sub ErrorDialog{
     my ($title, $message) = @_;
@@ -138,39 +148,38 @@ sub ErrorDialog{
 }
 sub StartGame{
     $grid->ResetCurrentGrid();
-    #$grid->CreateLine(10, 10, 3);
-    #$grid->CreateFlower(3, 20);
-    #$grid->CreateGlider(2,5);
-    #$grid->CreateGlider(10,5);
     $grid->CreateGun(10, 10);
+    $grid->AdaptRange;
     $window = MainWindow->new(-title => $windowTitle);
-    my $code_font = $window->fontCreate('code', -family => 'courier', -size => 20);
+    my $code_font = $window->fontCreate('code', -family => 'calibri', -size => 15);
     my $mainFrame = $window->Frame()->pack(-side => 'top', -fill => 'x');
-    my $leftFrame = $mainFrame->Frame(-background => "black")->pack(-side => 'left', -fill => 'x');
-    $leftFrame->Label(-text => "Logic Gates", -background => "green", -font => $code_font)->pack(-fill => 'x');
+    my $leftFrame = $mainFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'raised')->pack(-side => 'left', -fill => 'x');
+    $leftFrame->Label(-text => "Logic Gates", -background => "#00e6ff", -borderwidth => 5, -relief => 'raised', -font => $code_font)->pack(-fill => 'x');
     
-    my $upperLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
-    my $playButton = $upperLeftFrame->Checkbutton(-text => "Play", -font => $code_font)->pack(-fill => 'x');
+    my $upperLeftFrame = $leftFrame->Frame(-background => "#00ffb3", -borderwidth => 5, -relief => 'raised')->pack(-fill => 'x');
+    my $boolInput = $upperLeftFrame->Entry(-textvariable => \$booleanText, -font => $code_font, -justify => 'center')->pack(-fill => 'x', -pady => 5);
+    my $boolParseButton = $upperLeftFrame->Button(-text => "Parse", -font => $code_font, -command => \&GenerateBoolean)->pack(-fill => 'x', -pady => 5);
+
+    my $midLeftFrame = $leftFrame->Frame(-background => "#ffae00", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x', -pady => 15);
+    my $playButton = $midLeftFrame->Checkbutton(-text => "Play", -font => $code_font)->pack(-fill => 'x', -pady => 5, -padx => 5);
     $playButton->configure(-command => sub {
         $playButton->configure(-text => $isPlaying?"Resume":"Pause");
         RunGame;
         $playID = $window->repeat($delay, \&UpdateGame) if $isPlaying;
     });
-    my $resetButton = $upperLeftFrame->Button(-text => "Reset", -font => $code_font, -command => sub {
+    my $resetButton = $midLeftFrame->Button(-text => "Reset", -font => $code_font, -command => sub {
         $playButton->deselect;
         $playButton->configure(-text => "Play");
         ClearGame;
-    })->pack(-fill => 'x');
-    my $showRegionButton = $upperLeftFrame->Checkbutton(-text => $showRegion?"Hide Region":"Show Region", -font => $code_font)->pack(-fill => 'x');
+    })->pack(-fill => 'x', -pady => 5, -padx => 5);
+    my $showRegionButton = $midLeftFrame->Checkbutton(-text => $showRegion?"Hide Region":"Show Region", -font => $code_font)->pack(-fill => 'x', -pady => 5, -padx => 5);
     $showRegionButton->configure(-command => sub {
         $showRegion = !$showRegion;
         $showRegionButton->configure(-text => $showRegion?"Hide Region":"Show Region");
         UpdateGame;
     });
 
-    my $midLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
-
-    my $lowerLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
+    #my $lowerLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
     
     my ($xSize, $ySize) = ($xLength * $boxSize, $yLength * $boxSize);
     $canvas = $mainFrame->Frame(-bg => "black",  -width => $xSize, -height => $ySize, -borderwidth => 5, -relief => 'raised')->pack(-side => 'right', -fill => "both");

@@ -13,17 +13,21 @@ sub new {
       _vicinity => $args{'vicinity'},
       _destroyAtBorder => $args{'destroyAtBorder'},
       _currentGrid => undef,
-      _previousGrid => undef
+      _previousGrid => undef,
+      _iXPos => undef,
+      _fXPos => undef,
+      _iYPos => undef,
+      _fYPos => undef
    };
    bless $self, $class;
    $self->{_currentGrid} = $self->MakeNewGrid;
    $self->{_previousGrid} = $self->MakeNewGrid;
    return $self;
 }
-my ($iXPos, $fXPos, $iYPos, $fYPos) = (0, 0, 0, 0);
+
 sub GetRange{
    my ($self) = @_;
-   ($iXPos, $fXPos, $iYPos, $fYPos);
+   ($self->{_iXPos}, $self->{_fXPos}, $self->{_iYPos}, $self->{_fYPos});
 }
 sub MakeNewGrid{
    my ($self) = @_;
@@ -88,8 +92,8 @@ sub UpdateGridPoint{
 sub UpdateGrid{
    my ($self, $grid) = @_;
    my $nextGrid = $self->MakeNewGrid;
-   foreach my $row ($iYPos .. $fYPos){
-      foreach my $col ($iXPos .. $fXPos){
+   foreach my $row ($self->{_iYPos} .. $self->{_fYPos}){
+      foreach my $col ($self->{_iXPos} .. $self->{_fXPos}){
          my $currentState = $self->GetCurrentState($row, $col, $grid);
          my $nextState = $self->GetNextState($currentState, $row, $col, $grid);
          $self->UpdateGridPoint($nextState, $row, $col, $nextGrid);
@@ -122,8 +126,8 @@ sub AdaptRange{
          }
       }
    }
-   ($iYPos,$fYPos) = (sort {$a <=> $b} @rows)[0,-1];
-   ($iXPos,$fXPos) = (sort {$a <=> $b} @cols)[0,-1];
+   ($self->{_iYPos}, $self->{_fYPos}) = (sort {$a <=> $b} @rows)[0,-1];
+   ($self->{_iXPos}, $self->{_fXPos}) = (sort {$a <=> $b} @cols)[0,-1];
 }
 sub UpdateCurrentGrid{
    my ($self) = @_;
