@@ -95,10 +95,15 @@ sub PrintCanvasGrid{
     }
 }
 sub UpdateGame{
-    $grid->UpdateCurrentGrid if $isPlaying;
+    if ($isPlaying){
+        $grid->UpdateCurrentGrid;
+    }
+    else{
+        $grid->AdaptRange;
+    }
     $canvas->delete('points');
     PrintCanvasGrid;
-    PrintTerminalGrid;
+    #PrintTerminalGrid;
 }
 sub RunGame{
    if($isPlaying){
@@ -159,8 +164,8 @@ sub StartGame{
         RunGame if $isPlaying;
         my $filePath = $window->getSaveFile(-title => "Save current state", -initialfile => "state_file");
         if (defined $filePath){
-            truncate $filePath, 0;
-            open(FH, '>>', $filePath) or ErrorDialog('Error!', 'Failed to save file');
+            #truncate $filePath, 0;
+            open(FH, '>', $filePath) or ErrorDialog('Error!', 'Failed to save file');
             print FH $xLength, $/, $yLength, $/;
             foreach my $row(0..$yLength - 1){
                 foreach my $col(0..$xLength - 1){

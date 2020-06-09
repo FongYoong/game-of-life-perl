@@ -65,7 +65,7 @@ sub GetNeighbours{
 }
 sub GetCurrentState{
    my ($self, $row, $col, $grid) = @_;
-   $grid->[$row]->[$col];
+   $grid->[$row]->[$col] ? 1:0;
 }
 sub GetNextState{
    my ($self, $currentState, $row, $col, $grid) = @_;
