@@ -14,7 +14,7 @@ my $boxSize = 10;
 my $xLength = 100;
 my $yLength = 50;
 my $vicinity = 1;
-my $destroyAtBorder = 0;
+my $destroyAtBorder = 1;
 my $showRegion = 0;
 my $grid = new GOL_Grid('xLength'=>$xLength, 'yLength'=>$yLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
 my $window;
@@ -31,7 +31,7 @@ sub PrintTerminalGrid{
     print "\n";
     my %rangePoints = ();
     my @range = $grid->GetRange;
-    if ($showRegion){
+    if ($showRegion && defined $range[0]){
         foreach my $row ($range[2] .. $range[3]){
             $rangePoints{"$row $range[0]"} = 1;
         }
@@ -71,8 +71,8 @@ sub PrintCanvasGrid{
             }
         }
     }
-    if ($showRegion){
-        my @range = $grid->GetRange;
+    my @range = $grid->GetRange;
+    if ($showRegion && defined $range[0]){
         foreach my $row ($range[2] .. $range[3]){
             my @positionStart= ($range[0] * $grid->{_boxSize}, $row * $grid->{_boxSize});
             my @positionEnd= (($range[0] + 1) * $grid->{_boxSize}, ($row + 1) * $grid->{_boxSize});
@@ -125,10 +125,8 @@ sub ErrorDialog{
 }
 sub StartGame{
     $grid->ResetCurrentGrid();
-    $grid->CreateLine(10, 10, 3);
-    $grid->CreateFlower(3, 20);
-    $grid->CreateGlider(2,5);
-    $grid->CreateGlider(10,5);
+    $grid->CreateSEGun(2, 1);
+    $grid->CreateSWGun(1, 46);
     $grid->AdaptRange;
     $window = MainWindow->new(-title => $windowTitle);
     my $code_font = $window->fontCreate('code', -family => 'calibri', -size => 15);
@@ -154,7 +152,7 @@ sub StartGame{
     my $midLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
     my $presetBox = $midLeftFrame->Scrolled("Listbox", -scrollbars => "e", -selectmode => "single",
     -selectforeground => 'red', -selectbackground => 'green', -selectborderwidth => 5, -font => $code_font)->pack(-fill => 'x');
-    $presetBox->insert('end', qw/Dot Glider Gun Eater Spinner Flower/);
+    $presetBox->insert('end', qw/Dot Glider SWGun SEGun Eater Spinner Flower/);
     $presetBox->bind('<1>', sub {
         $presetType = $presetBox->get($presetBox->curselection());
     });
@@ -211,7 +209,7 @@ sub StartGame{
 
     my ($xSize, $ySize) = ($xLength * $boxSize, $yLength * $boxSize);
     $canvas = $mainFrame->Canvas(-width=>$xSize, -height=>$ySize, -borderwidth => 5, -relief => 'raised')->grid->pack(-side => 'right', -fill => 'x');
-    $canvas->configure("-scrollregion" => [0,0, $xSize , $yLength * $boxSize]);
+    $canvas->configure("-scrollregion" => [0,0, $xSize, $ySize]);
     $canvas->createGrid(0, 0, $boxSize, $boxSize);
     $canvas->focusFollowsMouse;
     my $pressedEvent = sub {

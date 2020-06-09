@@ -25,10 +25,6 @@ sub new {
    return $self;
 }
 
-sub GetRange{
-   my ($self) = @_;
-   ($self->{_iXPos}, $self->{_fXPos}, $self->{_iYPos}, $self->{_fYPos});
-}
 sub MakeNewGrid{
    my ($self) = @_;
    my @grid = ();
@@ -49,7 +45,7 @@ sub RectifyPoint{
 }
 sub ExceededBorder{
    my ($self, $row, $col) = @_;
-   ($col >= $self->{_yLength} || $col < 0 || $row >= $self->{_xLength} || $row < 0);
+   $col >= $self->{_xLength} || $col < 0 || $row >= $self->{_yLength} || $row < 0;
 }
 sub GetNeighbours{
    my($self, $row, $col) = @_;
@@ -58,7 +54,7 @@ sub GetNeighbours{
       foreach my $nCol ($col - $self->{_vicinity} .. $col + $self->{_vicinity}){
          if($nRow != $row || $nCol != $col){
             my @verified = $self->RectifyPoint($nRow, $nCol);
-            if ($self->{_destroyAtBorder} && $self->ExceededBorder($row, $col)){
+            if ($self->{_destroyAtBorder} && $self->ExceededBorder($nRow, $nCol)){
                $verified[2] = 1;
             }
             push @neighbours, [@verified];
@@ -92,16 +88,26 @@ sub UpdateGridPoint{
 sub UpdateGrid{
    my ($self, $grid) = @_;
    my $nextGrid = $self->MakeNewGrid;
-   foreach my $row ($self->{_iYPos} .. $self->{_fYPos}){
-      foreach my $col ($self->{_iXPos} .. $self->{_fXPos}){
-         my $currentState = $self->GetCurrentState($row, $col, $grid);
-         my $nextState = $self->GetNextState($currentState, $row, $col, $grid);
-         $self->UpdateGridPoint($nextState, $row, $col, $nextGrid);
+   if($self->GetRange){
+      foreach my $row ($self->{_iYPos} .. $self->{_fYPos}){
+         foreach my $col ($self->{_iXPos} .. $self->{_fXPos}){
+            my $currentState = $self->GetCurrentState($row, $col, $grid);
+            my $nextState = $self->GetNextState($currentState, $row, $col, $grid);
+            $self->UpdateGridPoint($nextState, $row, $col, $nextGrid);
+         }
       }
    }
    $nextGrid;
 }
-
+sub GetRange{
+   my ($self) = @_;
+   if(defined $self->{_iXPos} && defined $self->{_fXPos} && defined $self->{_iYPos} && defined $self->{_fYPos}){
+      ($self->{_iXPos}, $self->{_fXPos}, $self->{_iYPos}, $self->{_fYPos});
+   }
+   else{
+      (undef);
+   }
+}
 sub AdaptRange{
    my ($self) = @_;
    my @rows = ();
@@ -109,16 +115,20 @@ sub AdaptRange{
    foreach my $row (0 .. $self->{_yLength} - 1){
       foreach my $col (0 .. $self->{_xLength} - 1){
          if($self->GetCurrentState($row, $col, $self->{_currentGrid})){
-            if ($self->{_destroyAtBorder} && $self->ExceededBorder($row, $col)){
-               push @rows, $row;
-               push @cols, $col;
-            }
-            else{
-               foreach my $i(-1..1){
+            foreach my $i(-1..1){
+               if ($self->{_destroyAtBorder} && $self->ExceededBorder($row + $i, $col)){
+                  push @rows, $row + $i >= $self->{_yLength} ? $row : 0;
+               }
+               else{
                   my @r = $self->RectifyPoint($row + $i, $col);
                   push @rows, $r[0];
                }
-               foreach my $i(-1..1){
+            }
+            foreach my $i(-1..1){
+               if ($self->{_destroyAtBorder} && $self->ExceededBorder($row, $col + $i)){
+                  push @cols, $col + $i >= $self->{_xLength} ? $col : 0;
+               }
+               else{
                   my @c = $self->RectifyPoint($row, $col + $i);
                   push @cols, $c[1];
                }
@@ -128,6 +138,7 @@ sub AdaptRange{
    }
    ($self->{_iYPos}, $self->{_fYPos}) = (sort {$a <=> $b} @rows)[0,-1];
    ($self->{_iXPos}, $self->{_fXPos}) = (sort {$a <=> $b} @cols)[0,-1];
+   print "\n$self->{_iXPos} $self->{_fXPos}";
 }
 sub UpdateCurrentGrid{
    my ($self) = @_;
@@ -153,18 +164,34 @@ sub CreateGlider{
    [0, 0, 1],  
    [1, 1, 1]));
 }
-sub CreateGun{
+sub CreateSWGun{
+   #length = 36
+   #place 1 up, 9 right, relative to SEGun to make gliders vanish
    my ($self, $row, $col) = @_;
    $self->CreateMatrix($row, $col,
-   ([0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-   [0,0,0,0,0,0,0,0,0,0,0,0,1,0,1],
+   ([(0)x13,1],
+   [(0)x12,1,0,1],
    [1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,1,0,0,0,0,0,0,1,1],
    [1,1,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,0,0,0,0,1,0,1],
-   [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,1,0,1,1,1,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1],
-   [0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1,1,0,0,1,0,0,0,0,1,1,1,0,0,0,0,0,0,1,1],
-   [0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,1,1,0,0,0,0,1,1,1],
+   [(0)x11,1,0,0,0,1,0,1,1,1,0,0,0,0,1,1,1,0,0,0,0,0,0,0,1,1],
+   [(0)x12,1,0,1,0,1,1,0,0,1,0,0,0,0,1,1,1,0,0,0,0,0,0,1,1],
+   [(0)x13,1,0,0,0,0,1,1,0,0,0,0,1,1,1],
    [(0)x23,1,0,1],
    [(0)x23,1,1]));
+}
+sub CreateSEGun{
+   #length = 36
+   my ($self, $row, $col) = @_;
+   $self->CreateMatrix($row, $col,
+   ([(0)x22, 1],
+   [(0)x21,1,0,1],
+   [(0)x11,1,1,(0)x6,1,1,0,0,0,1,(0)x9,1,1],
+   [(0)x10,1,0,1,0,0,0,0,1,1,0,1,0,0,0,1,(0)x9,1,1],
+   [1,1,(0)x7,1,1,1,0,0,0,0,1,1,1,0,1,0,0,0,1],
+   [1,1,(0)x6,1,1,1,0,0,0,0,1,0,0,1,1,0,1,0,1],
+   [(0)x9,1,1,1,0,0,0,0,1,1,0,0,0,0,1],
+   [(0)x10,1,0,1],
+   [(0)x11,1,1]));
 }
 sub CreateEater{
    my ($self, $row, $col) = @_;
@@ -202,7 +229,8 @@ sub SetPreset{
    my $presets = {
       'Dot' => \&GOL_Grid::CreateDot,
       'Glider' => \&GOL_Grid::CreateGlider,
-      'Gun' => \&GOL_Grid::CreateGun,
+      'SWGun' => \&GOL_Grid::CreateSWGun,
+      'SEGun' => \&GOL_Grid::CreateSEGun,
       'Eater' => \&GOL_Grid::CreateEater,
       'Spinner' => \&GOL_Grid::CreateSpinner,
       'Flower' => \&GOL_Grid::CreateFlower,

@@ -32,7 +32,7 @@ sub PrintTerminalGrid{
     print "\n";
     my %rangePoints = ();
     my @range = $grid->GetRange;
-    if ($showRegion && @range){
+    if ($showRegion && defined $range[0]){
         foreach my $row ($range[2] .. $range[3]){
             $rangePoints{"$row $range[0]"} = 1;
         }
@@ -81,8 +81,8 @@ sub PrintCanvasGrid{
             }
         }
     }
-    if ($showRegion){
-        my @range = $grid->GetRange;
+    my @range = $grid->GetRange;
+    if ($showRegion && defined $range[0]){
         glColor3f(1, 0, 0);
         foreach my $row ($range[2] .. $range[3]){
             glVertex2f(NormaliseCanvasPosition($range[0], $row));
@@ -126,20 +126,18 @@ sub ClearGame{
 }
 
 sub ParseBoolean{
-    #A and B are the 2 variables
+    #A,a and B,b are the 2 variables
     #The operators are !, &, |
-    my $text = @_;
-    my @captured = $text =~ /\((.*)\) *([!&|])? *([AaBb])?/;
-    if(@captured){
-        ParseBoolean($text);
-    }
-    else{
-        #ErrorDialog("Error!", "Invalid expression");
-    }
-    
+    my ($text) = @_;
     
 }
 sub GenerateBoolean{
+    @booleanList = ();
+    #ErrorDialog("Error!", "Invalid expression") if !ParseBoolean($booleanText);
+    print "\n";
+    foreach my $i(0..$#booleanList){
+        print "$booleanList[$i]\n";
+    }
 
 }
 sub ErrorDialog{
@@ -148,7 +146,8 @@ sub ErrorDialog{
 }
 sub StartGame{
     $grid->ResetCurrentGrid();
-    $grid->CreateGun(10, 10);
+    $grid->CreateSEGun(2, 1);
+    $grid->CreateSWGun(1, 46);
     $grid->AdaptRange;
     $window = MainWindow->new(-title => $windowTitle);
     my $code_font = $window->fontCreate('code', -family => 'calibri', -size => 15);
@@ -157,7 +156,7 @@ sub StartGame{
     $leftFrame->Label(-text => "Logic Gates", -background => "#00e6ff", -borderwidth => 5, -relief => 'raised', -font => $code_font)->pack(-fill => 'x');
     
     my $upperLeftFrame = $leftFrame->Frame(-background => "#00ffb3", -borderwidth => 5, -relief => 'raised')->pack(-fill => 'x');
-    my $boolInput = $upperLeftFrame->Entry(-textvariable => \$booleanText, -font => $code_font, -justify => 'center')->pack(-fill => 'x', -pady => 5);
+    my $boolInput = $upperLeftFrame->Entry(-textvariable => \$booleanText, -background => 'white', -font => $code_font, -justify => 'center')->pack(-fill => 'x', -pady => 5);
     my $boolParseButton = $upperLeftFrame->Button(-text => "Parse", -font => $code_font, -command => \&GenerateBoolean)->pack(-fill => 'x', -pady => 5);
 
     my $midLeftFrame = $leftFrame->Frame(-background => "#ffae00", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x', -pady => 15);
