@@ -138,7 +138,6 @@ sub AdaptRange{
    }
    ($self->{_iYPos}, $self->{_fYPos}) = (sort {$a <=> $b} @rows)[0,-1];
    ($self->{_iXPos}, $self->{_fXPos}) = (sort {$a <=> $b} @cols)[0,-1];
-   print "\n$self->{_iXPos} $self->{_fXPos}";
 }
 sub UpdateCurrentGrid{
    my ($self) = @_;
@@ -167,6 +166,7 @@ sub CreateGlider{
 sub CreateSWGun{
    #length = 36
    #place 1 up, 9 right, relative to SEGun to make gliders vanish
+   #OR Gate, SE, SE col:+45, SW row:-1 col:+45
    my ($self, $row, $col) = @_;
    $self->CreateMatrix($row, $col,
    ([(0)x13,1],

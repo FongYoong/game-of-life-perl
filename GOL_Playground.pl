@@ -1,9 +1,10 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use File::Basename qw(dirname);
-use Cwd  qw(abs_path);
-use lib dirname(dirname abs_path $0) . '/GOL/modules';
+use Cwd qw(abs_path);
+use FindBin;
+use lib abs_path("$FindBin::Bin/modules");
+use Getopt::Long;
 use Tk;
 use GOL_Grid;
 
@@ -14,7 +15,7 @@ my $boxSize = 10;
 my $xLength = 100;
 my $yLength = 50;
 my $vicinity = 1;
-my $destroyAtBorder = 1;
+my $destroyAtBorder = 0;
 my $showRegion = 0;
 my $grid = new GOL_Grid('xLength'=>$xLength, 'yLength'=>$yLength, 'boxSize'=>$boxSize, 'vicinity'=>$vicinity, 'destroyAtBorder'=>$destroyAtBorder);
 my $window;
@@ -131,9 +132,10 @@ sub StartGame{
     $window = MainWindow->new(-title => $windowTitle);
     my $code_font = $window->fontCreate('code', -family => 'calibri', -size => 15);
     my $mainFrame = $window->Frame()->pack(-side => 'top', -fill => 'x');
-    #my $topFrame = $mainFrame->Frame(-background => "red")->pack(-side => 'top', -fill => 'x');
-    #my $topLabel = $topFrame->Label(-text => "Grid Input", -background => "red")->pack(-side => "top");
     my $leftFrame = $mainFrame->Frame(-background => "black")->pack(-side => 'left', -fill => 'x');
+    $leftFrame->Button(-text => "Back", -font => $code_font, -command => sub{
+        exec("perl ./GOL.pl --help");
+    })->pack(-fill => 'x', -pady => 10);
     $leftFrame->Label(-text => "Playground", -background => "#00e6ff", -borderwidth => 5, -relief => 'raised', -font => $code_font)->pack(-fill => 'x');
     
     my $upperLeftFrame = $leftFrame->Frame(-background => "#ffae00", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
