@@ -1,5 +1,5 @@
 # Conway's Game of Life - Perl
-This simple project comprises of three custom Perl scripts and one custom Perl module.
+* 
 
 ## Files
 
@@ -140,6 +140,6 @@ B --> D{Rhombus}
 C --> D
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbLTE5MzU3NDUxNDYsLTExNTM1NTI5OTVdfQ
-==
+eyJoaXN0b3J5IjpbLTEzOTE3NDUwODgsLTE5MzU3NDUxNDYsLT
+ExNTM1NTI5OTVdfQ==
 -->
