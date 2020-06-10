@@ -1,7 +1,8 @@
 # Conway's Game of Life - Perl
-* [Perl_Grid.pl](#perl)
+* [GOL_Grid.pl](#gol-grid)
+* [GOL.pl](#gol.pl)
 
-## Perl_Grid.pl
+## GOL_Grid.pl
 
 StackEdit stores your files in your browser, which means all your files are automatically saved locally and are accessible **offline!**
 
@@ -16,6 +17,8 @@ All your files and folders are presented as a tree in the file explorer. You can
 ## Rename a file
 
 You can rename the current file by clicking the file name in the navigation bar or by clicking the **Rename** button in the file explorer.
+
+## GOL.pl
 
 ## Delete a file
 
@@ -140,6 +143,6 @@ B --> D{Rhombus}
 C --> D
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMjAyNDk1MzA1MiwtMTM5MTc0NTA4OCwtMT
-kzNTc0NTE0NiwtMTE1MzU1Mjk5NV19
+eyJoaXN0b3J5IjpbLTc2Mjk4NzYsLTEzOTE3NDUwODgsLTE5Mz
+U3NDUxNDYsLTExNTM1NTI5OTVdfQ==
 -->
