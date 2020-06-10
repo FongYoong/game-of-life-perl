@@ -1,7 +1,7 @@
 # Conway's Game of Life - Perl
-This simple project comprises of three custom Perl scripts and one custom Perl module. 
+This simple project comprises of three custom Perl scripts and one custom Perl module.
 
-# Files
+## Files
 
 StackEdit stores your files in your browser, which means all your files are automatically saved locally and are accessible **offline!**
 
@@ -140,5 +140,6 @@ B --> D{Rhombus}
 C --> D
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMTAwMzA2MTg5OSwtMTE1MzU1Mjk5NV19
+eyJoaXN0b3J5IjpbLTE5MzU3NDUxNDYsLTExNTM1NTI5OTVdfQ
+==
 -->
