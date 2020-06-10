@@ -213,6 +213,36 @@ sub CreateEater{
    [0, 0, 1],
    [0, 0, 1, 1]));
 }
+sub CreatePulsar{
+   my ($self, $row, $col) = @_;
+   $self->CreateMatrix($row, $col,
+   ([0,1,(0)x14,1],
+   [1,0,1,0,0,0,0,1,(0)x7,1,0,1],
+   [0,1,0,0,0,1,1,0,1,1,(0)x6,1],
+   [(0)x7,1],
+   [],
+   [],
+   [],
+   [(0)x7,1],
+   [0,1,0,0,0,1,1,0,1,1,(0)x6,1],
+   [1,0,1,0,0,0,0,1,(0)x7,1,0,1],
+   [0,1,(0)x14,1]));
+}
+sub CreateGlasses{
+   my ($self, $row, $col) = @_;
+   $self->CreateMatrix($row, $col,
+   ([0,0,0,0,1,(0)x8,1],
+   [0,0,1,1,1,(0)x8,1,1,1],
+   [0,1,(0)x14,1],
+   [0,1,0,0,1,1,1,0,0,0,0,1,1,1,0,0,1],
+   [1,1,0,1,0,0,0,1,0,0,1,0,0,0,1,0,1,1],
+   [0,0,0,1,0,0,0,1,1,1,1,0,0,0,1],
+   [0,0,0,1,0,0,0,1,0,0,1,0,0,0,1],
+   [0,0,0,0,1,1,1,0,0,0,0,1,1,1],
+   [],
+   [0,0,0,0,1,1,0,1,0,0,1,0,1,1],
+   [0,0,0,0,1,0,1,1,0,0,1,1,0,1]));
+}
 sub CreateSpinner{
    my ($self, $row, $col) = @_;
    $self->CreateMatrix($row, $col, ([1,1,1]));
@@ -260,6 +290,8 @@ sub SetPreset{
       'SWGun' => \&GOL_Grid::CreateSWGun,
       'SEGun' => \&GOL_Grid::CreateSEGun,
       'Eater' => \&GOL_Grid::CreateEater,
+      'Pulsar' => \&GOL_Grid::CreatePulsar,
+      'Glasses' => \&GOL_Grid::CreateGlasses,
       'Spinner' => \&GOL_Grid::CreateSpinner,
       'Ring Of Fire' => \&GOL_Grid::CreateRingOfFire,
       'Bomb' => \&GOL_Grid::CreateBomb,

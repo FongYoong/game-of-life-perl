@@ -38,7 +38,7 @@ my $keyXDown = 0;
 my $playID;
 my $playButton;
 my $presetType = "Dot";
-my @presets = ("Dot", "Glider", "Dart", "SWGun", "SEGun", "Eater", "Spinner", "Ring Of Fire", "Bomb");
+my @presets = ("Dot", "Glider", "Dart", "SWGun", "SEGun", "Eater", "Pulsar", "Glasses", "Spinner", "Ring Of Fire", "Bomb");
 my $showRegion = 0;
 my $displayType;
 my @displayOptions = ("Both", "Canvas Only", "Terminal Only");
