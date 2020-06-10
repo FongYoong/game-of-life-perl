@@ -1,7 +1,5 @@
-# Conway's Game of Life written in Perl for Unix systems
-
-Hi! I'm your first Markdown file in **StackEdit**. If you want to learn about StackEdit, you can read me. If you want to play with Markdown, you can edit me. Once you have finished with me, you can create new files by opening the **file explorer** on the left corner of the navigation bar.
-
+# Conway's Game of Life - Perl
+This simple project comprises of three custom Perl scripts and one custom Perl module. 
 
 # Files
 
@@ -142,5 +140,5 @@ B --> D{Rhombus}
 C --> D
 ```
 <!--stackedit_data:
-eyJoaXN0b3J5IjpbMjA4Njk2MzEzLC0xMTUzNTUyOTk1XX0=
+eyJoaXN0b3J5IjpbMTAwMzA2MTg5OSwtMTE1MzU1Mjk5NV19
 -->
