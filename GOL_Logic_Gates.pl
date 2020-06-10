@@ -6,14 +6,14 @@ use FindBin;
 use lib abs_path("$FindBin::Bin/modules");
 use Getopt::Long;
 use Tk;
-use OpenGL;
+use OpenGL qw(:old);
 use GOL_Grid;
 
 $| = 1;
 
 my $windowTitle = "Game of Life - Intel Edition";
-my $xLength = 180;
-my $yLength = 80;
+my $xLength = 200;
+my $yLength = 90;
 my $boxSize = 5;
 my $vicinity = 1;
 my $destroyAtBorder = 1;
@@ -34,6 +34,10 @@ my $playButton;
 my $showRegion = 0;
 my $displayType;
 my @displayOptions = ("Both", "Canvas Only", "Terminal Only");
+my $lightBlue= "#00e6ff";
+my $lightGreen = "#00ffb3";
+my $lightOrange = "#ffae00";
+my $code_font;
 
 my $boolA = '';
 my $boolB = '';
@@ -82,6 +86,7 @@ sub PrintCanvasGrid{
     glOrtho(-1, 1, -1, 1, -1, 1);
     glPointSize($boxSize);
     glBegin(GL_POINTS);
+    glColor3f(0, 1, 0);
     foreach my $row (0 .. $yLength - 1){
         foreach my $col (0 .. $xLength - 1){
             my $currentState = $grid->GetCurrentState($row, $col, $grid->{_currentGrid});
@@ -136,6 +141,7 @@ sub ResetPlayButton{
     $playButton->configure(-text => "Play");
 }
 sub ClearGame{
+    $canvas->delete('texts');
     ResetPlayButton;
     RunGame if $isPlaying;
     $grid->ResetCurrentGrid();
@@ -152,22 +158,35 @@ sub ChangeTime{
     my $newTime = eval "$timeDelay $operator 50";
     $timeDelay = $newTime >= $minTimeDelay ? $newTime : $minTimeDelay;
 }
+sub CreateText{
+    my ($y, $x, $text) = @_;
+    my $label = $canvas->Label(-text => $text, -background => 'black', -foreground => "white", -font => $code_font, -relief => 'raised');
+    $canvas->createWindow($x * $boxSize, $y *  $boxSize, -window => $label, -tags => "texts");
+}
 sub ParseBoolean{
     ClearGame;
     if($boolOperator eq 'OR'){
-        $grid->CreateSEGun(2, 1);
-        $grid->CreateSEGun(2, 46) if $boolA;
-        $grid->CreateSWGun(1, 91) if $boolB;
-        $grid->CreateSWGun(1, 136);
+        $grid->CreateSEGun(8, 1);
+        $grid->CreateSEGun(9, 43) if $boolA;
+        $grid->CreateSEGun(8, 97) if $boolB;
+        $grid->CreateSWGun(7, 142);
+        CreateText(4, 65, "A");
+        CreateText(4, 120, "B");
+        CreateText($yLength, 87, "Output");
     }
     elsif ($boolOperator eq 'AND'){
-        $grid->CreateSEGun(3, 1) if $boolA;
-        $grid->CreateSEGun(2, 55) if $boolB;#19
-        $grid->CreateSWGun(1, 100);#10
+        $grid->CreateSEGun(10, 1) if $boolA;
+        $grid->CreateSEGun(9, 55) if $boolB;
+        $grid->CreateSWGun(8, 100);
+        CreateText(4, 25, "A");
+        CreateText(4, 80, "B");
+        CreateText($yLength - 20, 80, "Output");
     }
     elsif ($boolOperator eq 'NOT'){
-        $grid->CreateSEGun(2, 1);
-        $grid->CreateSWGun(1, 46) if $boolB;
+        $grid->CreateSEGun(10, 1);
+        $grid->CreateSWGun(9, 46) if $boolB;
+        CreateText(4, 70, "B");
+        CreateText(70, 70, "Output");
     }
     UpdateGame;
 }
@@ -176,16 +195,16 @@ sub StartGame{
     $grid->AdaptRange;
     $window = MainWindow->new(-title => $windowTitle);
     $window->resizable(0,0);
-    my $code_font = $window->fontCreate('code', -family => 'calibri', -size => 15);
+    $code_font = $window->fontCreate('code', -family => 'calibri', -size => 15);
     my $mainFrame = $window->Frame()->pack(-side => 'top', -fill => 'x');
     my $leftFrame = $mainFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'raised')->pack(-side => 'left', -fill => 'both');
     $leftFrame->Button(-text => "Back", -font => $code_font, -command => sub{
         exec("perl ./GOL.pl");
     })->pack(-fill => 'x', -pady => 10);
-    $leftFrame->Label(-text => "Logic Gates", -background => "#00e6ff", -borderwidth => 5, -relief => 'raised', -font => $code_font)->pack(-fill => 'x');
+    $leftFrame->Label(-text => "Logic Gates", -background => $lightBlue, -borderwidth => 5, -relief => 'raised', -font => $code_font)->pack(-fill => 'x');
     
-    my $upperFrame = $leftFrame->Frame(-background => "#00ffb3", -borderwidth => 5, -relief => 'raised')->pack(-fill => 'x');
-    my $boolFrame = $upperFrame->Frame(-background => "#00ffb3", )->pack(-fill => 'x');
+    my $upperFrame = $leftFrame->Frame(-background => $lightGreen, -borderwidth => 5, -relief => 'raised')->pack(-fill => 'x');
+    my $boolFrame = $upperFrame->Frame(-background => $lightGreen, )->pack(-fill => 'x');
     my $validateBoolInput = sub {
         my $a = shift @_;
         return 1 if $a eq '';
@@ -199,7 +218,7 @@ sub StartGame{
     my $inputB = $boolFrame->Entry(-textvariable => \$boolB, -background => 'white', -width => 1, -font => $code_font, -justify => 'center',
         -validate => 'key', -validatecommand => sub {$validateBoolInput->($_[0])})->pack(-side => 'left', -expand => 1, -padx => 3);
     
-    my $lowerFrame = $leftFrame->Frame(-background => "#ffae00", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x', -pady => 15);
+    my $lowerFrame = $leftFrame->Frame(-background => $lightOrange, -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x', -pady => 15);
     $playButton = $lowerFrame->Checkbutton(-text => "Play", -font => $code_font)->pack(-fill => 'x', -pady => 5, -padx => 5);
     $playButton->configure(-command => sub {
         $playButton->configure(-text => $isPlaying?"Play":"Pause");
@@ -207,7 +226,6 @@ sub StartGame{
         $playID = $window->repeat($timeDelay, \&UpdateGame) if $isPlaying;
     });
     my $boolParseButton = $upperFrame->Button(-text => "Parse", -font => $code_font, -command => sub{
-        ResetPlayButton;
         ParseBoolean;
     })->pack(-fill => 'x', -pady => 5);
 
@@ -231,7 +249,7 @@ sub StartGame{
     my $displayTypeButton = $lowerFrame->Optionmenu(-variable => \$displayType, -options => \@displayOptions, -font => $code_font)->pack(-fill=> 'x', -pady => 5, -padx => 5);
     
     my ($xSize, $ySize) = ($xLength * $boxSize, $yLength * $boxSize);
-    $canvas = $mainFrame->Frame(-bg => "black",  -width => $xSize, -height => $ySize, -borderwidth => 5, -relief => 'raised')->pack(-side => 'right', -fill => "both");
+    $canvas = $mainFrame->Canvas(-bg => "black",  -width => $xSize, -height => $ySize)->pack(-side => 'right', -pady => 10, -padx => 10, -fill => "both");
     $canvas->waitVisibility;
     glpOpenWindow(parent=> hex($canvas->id), width => $xSize, height => $ySize);
     PrintCanvasGrid;

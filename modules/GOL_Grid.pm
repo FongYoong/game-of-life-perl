@@ -163,6 +163,19 @@ sub CreateGlider{
    [0, 0, 1],  
    [1, 1, 1]));
 }
+sub CreateDart{
+   my ($self, $row, $col) = @_;
+   $self->CreateMatrix($row, $col,
+   ([(0)x6,1,1,1],
+   [(0)x6,1,1,1],
+   [(0)x5,1,0,0,0,1],
+   [],
+   [(0)x5,1,0,0,0,1],
+   [0,0,1,0,1,1,0,0,0,1,1,0,1],
+   [0,1,0,1,1,0,1,0,1,0,1,1,0,1],
+   [1,0,0,0,1,1,1,0,1,1,1,0,0,0,1],
+   [0,1,1,0,1,0,1,0,1,0,1,0,1,1]));
+}
 sub CreateSWGun{
    #length = 36
    #place 1 up, 9 right, relative to SEGun to make gliders vanish
@@ -180,7 +193,6 @@ sub CreateSWGun{
    [(0)x23,1,1]));
 }
 sub CreateSEGun{
-   #length = 36
    my ($self, $row, $col) = @_;
    $self->CreateMatrix($row, $col,
    ([(0)x22, 1],
@@ -205,7 +217,22 @@ sub CreateSpinner{
    my ($self, $row, $col) = @_;
    $self->CreateMatrix($row, $col, ([1,1,1]));
 }
-sub CreateFlower{
+sub CreateRingOfFire{
+   my ($self, $row, $col) = @_;
+   $self->CreateMatrix($row, $col,
+   ([0,0,0,0,0,1],
+   [0,0,0,1,0,1,0,1],
+   [0,1,0,1,0,1,0,1,0,1],
+   [0,0,1,1,0,1,0,1,1],
+   [1,0,0,0,0,1,0,0,0,0,1],
+   [0,1,1,1,1,0,1,1,1,1],
+   [1,0,0,0,0,1,0,0,0,0,1],
+   [0,0,1,1,0,1,0,1,1],
+   [0,1,0,1,0,1,0,1,0,1],
+   [0,0,0,1,0,1,0,1],
+   [0,0,0,0,0,1]));
+}
+sub CreateBomb{
    my ($self, $row, $col) = @_;
    $self->CreateLine($row - 1, $col, 6);
    $self->CreateLine($row, $col, 6);
@@ -229,11 +256,13 @@ sub SetPreset{
    my $presets = {
       'Dot' => \&GOL_Grid::CreateDot,
       'Glider' => \&GOL_Grid::CreateGlider,
+      'Dart' => \&GOL_Grid::CreateDart,
       'SWGun' => \&GOL_Grid::CreateSWGun,
       'SEGun' => \&GOL_Grid::CreateSEGun,
       'Eater' => \&GOL_Grid::CreateEater,
       'Spinner' => \&GOL_Grid::CreateSpinner,
-      'Flower' => \&GOL_Grid::CreateFlower,
+      'Ring Of Fire' => \&GOL_Grid::CreateRingOfFire,
+      'Bomb' => \&GOL_Grid::CreateBomb,
       'default' => sub { print "\nPreset not found.\t:(\n"; exit; }
    };
    $presets->{$type} ? $presets->{$type}->($self, $row, $col) : $presets->{'default'}->();

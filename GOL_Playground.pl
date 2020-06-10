@@ -38,9 +38,13 @@ my $keyXDown = 0;
 my $playID;
 my $playButton;
 my $presetType = "Dot";
+my @presets = ("Dot", "Glider", "Dart", "SWGun", "SEGun", "Eater", "Spinner", "Ring Of Fire", "Bomb");
 my $showRegion = 0;
 my $displayType;
 my @displayOptions = ("Both", "Canvas Only", "Terminal Only");
+my $lightBlue= "#00e6ff";
+my $lightOrange = "#ffae00";
+my $lightRed = "#ff0008";
 
 sub PrintTerminalGrid{
     system("clear");
@@ -161,9 +165,9 @@ sub StartGame{
     $leftFrame->Button(-text => "Back", -font => $code_font, -command => sub{
         exec("perl ./GOL.pl");
     })->pack(-fill => 'x', -pady => 10);
-    $leftFrame->Label(-text => "Playground", -background => "#00e6ff", -borderwidth => 5, -relief => 'raised', -font => $code_font)->pack(-fill => 'x');
+    $leftFrame->Label(-text => "Playground", -background => $lightBlue, -borderwidth => 5, -relief => 'raised', -font => $code_font)->pack(-fill => 'x');
     
-    my $upperLeftFrame = $leftFrame->Frame(-background => "#ffae00", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
+    my $upperLeftFrame = $leftFrame->Frame(-background => $lightOrange, -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
     $playButton = $upperLeftFrame->Checkbutton(-text => "Play", -font => $code_font)->pack(-fill => 'x', -pady => 5, -padx => 5);
     $playButton->configure(-command => sub {
         $playButton->configure(-text => $isPlaying?"Play":"Pause");
@@ -183,13 +187,13 @@ sub StartGame{
     my $midLeftFrame = $leftFrame->Frame(-background => "black", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
     my $presetBox = $midLeftFrame->Scrolled("Listbox", -scrollbars => "e", -selectmode => "single",
         -selectforeground => 'red', -selectbackground => 'green', -selectborderwidth => 5, -font => $code_font)->pack(-fill => 'x');
-    $presetBox->insert('end', qw/Dot Glider SWGun SEGun Eater Spinner Flower/);
+    $presetBox->insert('end', @presets);
     $presetBox->bind('<1>', sub {
         $presetType = $presetBox->get($presetBox->curselection());
     });
     $presetBox->selectionSet(0);
 
-    my $lowerLeftFrame = $leftFrame->Frame(-background => "#ff0008", -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
+    my $lowerLeftFrame = $leftFrame->Frame(-background => $lightRed, -borderwidth => 5, -relief => 'groove')->pack(-fill => 'x');
     my $saveButton = $lowerLeftFrame->Button(-text => "Save", -font => $code_font, -command => sub {
         RunGame if $isPlaying;
         ResetPlayButton;
