@@ -23,7 +23,7 @@ GetOptions(
     "vicinity=i" => \$vicinity,
     "destroyAtBorder=i" => \$destroyAtBorder,
     "timeDelay=i" => \$timeDelay
-);
+) or die("Error in command line arguments\n");
 if ($helpOption){
     my %options = (
         "-r, --repo" => "View Github repository",
@@ -31,7 +31,7 @@ if ($helpOption){
         "-y, --yLength" => "Vertical grid length",
         "-b, --boxSize" => "Size of each grid point",
         "-v, --vicinity" => "Range to detect neighbours (Experimental)",
-        "-d, --destroyAtBorder" => "Prevents wrap-round at grid borders",
+        "-d, --destroyAtBorder" => "A value of 1 prevents wrap-round at grid borders",
         "-t, --timeDelay" => "Grid refresh rate in milliseconds"
     );
     my $maxLength = 0;
@@ -50,6 +50,11 @@ if ($helpOption){
 exec("xdg-open https://github.com/FongYoong/game-of-life-perl") if $repoOption;
 
 my $window = MainWindow->new(-title => $windowTitle);
+if($xLength < 0 || $yLength < 0 || $boxSize < 0 || $vicinity < 0 || $timeDelay < 0){
+    $window->messageBox(-title => "Error!", -message => "Negative values are not allowed!", -type => 'Oops', -icon => 'error');
+    exit;
+}
+
 my $code_font = $window->fontCreate('code', -family => 'calibri', -size => 15);
 my $mainFrame = $window->Frame()->pack(-side => 'top', -fill => 'x');
 my $playgroundButton = $mainFrame->Button(-text => "Playground", -font => $code_font, -command => sub{
