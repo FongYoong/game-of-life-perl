@@ -9,8 +9,6 @@ use Tk;
 use OpenGL qw(:old);
 use GOL_Grid;
 
-$| = 1;
-
 my $windowTitle = "Game of Life - Intel Edition";
 my $xLength = 200;
 my $yLength = 90;

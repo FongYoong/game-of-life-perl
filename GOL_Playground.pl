@@ -8,8 +8,6 @@ use Getopt::Long;
 use Tk;
 use GOL_Grid;
 
-$| = 1;
-
 my $windowTitle = "Game of Life - Intel Edition";
 my $xLength = 100;
 my $yLength = 50;

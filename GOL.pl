@@ -4,8 +4,6 @@ use warnings;
 use Getopt::Long;
 use Tk;
 
-$| = 1;
-
 my $windowTitle = "Game of Life - Intel Edition";
 my $helpOption = 0;
 my $repoOption = 0;
