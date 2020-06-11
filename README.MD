@@ -11,7 +11,7 @@
 * [Tk (CPAN)](https://metacpan.org/pod/Tk)
     - For installation, Debian users may benefit from the following: ```sudo apt-get install perl-tk```
 * [OpenGL (CPAN)](https://metacpan.org/pod/OpenGL)
-    - Note: OpenGL libraries must be installed first before installing this Perl module.]
+    - Note: OpenGL libraries must be installed first before installing this Perl module.
 
 ***
 # Scripts
